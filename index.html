@@ -25,10 +25,10 @@ nav button.on{color:var(--ac);font-weight:600}
 #ov{position:fixed;inset:0;background:rgba(0,0,0,.5);overflow:auto;padding:12px}
 #ov .c{max-width:520px;margin:20px auto}
 .k{font-size:20px;font-weight:600;color:var(--ac)}
-textarea{min-height:90px}.filelabel{font-size:16px;color:var(--fg);font-weight:600;margin-top:12px}.filelabel input[type=file]{display:block;font-size:16px;padding:12px;margin-top:6px;min-height:48px;width:100%}.filelabel input[type=file]::file-selector-button{font:inherit;font-size:18px;font-weight:600;padding:9px 14px;margin-right:12px;cursor:pointer}
+textarea{min-height:90px}.filelabel{font-size:16px;color:var(--fg);font-weight:600;margin-top:12px}.filelabel input[type=file]{display:block;font-size:16px;padding:12px;margin-top:6px;min-height:48px;width:100%}.filelabel input[type=file]::file-selector-button{font:inherit;font-size:18px;font-weight:600;padding:9px 14px;margin-right:12px;cursor:pointer}.data-actions [data-a="exp"]{margin-left:18px}
 #version{position:fixed;top:4px;right:7px;z-index:20;padding:2px 6px;border-radius:6px;background:var(--bg);color:var(--mut);font-size:10px;line-height:1.3;opacity:.85;pointer-events:none}
 </style></head><body><main id="app"></main><div id="ov" hidden></div>
-<div id="version">TEST · 2026.11.19 · 08</div><nav id="nav"></nav>
+<div id="version">TEST · 2026.11.19 · 09</div><nav id="nav"></nav>
 <script>
 const K='espresso-v1',EQ=['machines','portafilters','baskets','grinders','scales'];
 const T={
@@ -235,7 +235,7 @@ function render(){nav();const a=document.getElementById('app');
   a.innerHTML=`<h1>Shots</h1><div class="row"><button class="p" data-a="tab" data-v="new">+ Neuer Shot</button></div><select id="ft"><option value="">Alle Shots</option>${[...new Set(db.baskets.map(b=>b.type).filter(Boolean))].map(t=>`<option${ftype==t?' selected':''}>${t}</option>`).join('')}</select>`+(l.length?l.map(shotCard).join(''):'<div class="c m">Noch keine Shots. Lege unter „Equipment“ und „Bohnen“ deine Ausstattung an und trage dann einen Shot ein.</div>')}
  else if(v=='new'){a.innerHTML=shotForm();tempUI();gridUI();calc();{const f=document.getElementById('sf'),b=find('beans',f.beans.value);if(!f.tratio.value&&b&&b.ratio)f.tratio.value=b.ratio;plan()}}
  else if(v=='eq'){a.innerHTML='<h1>Equipment</h1>'+EQ.map(entList).join('')+``}
- else if(v=='data')a.innerHTML='<h1>Daten</h1><div class="c"><div class="m">Backup als Text: Export kopieren und ablegen. Beim Import werden Stand und Anzahl verglichen, ersetzt wird erst beim zweiten Druck auf Import.</div><label class="filelabel">Textdatei auswählen (.txt)<input id="fi" type="file" accept=".txt,.json,text/plain"></label><textarea id="io"></textarea><div class="m" id="ic"></div><div class="row"><button data-a="imp">Import</button><button data-a="exp">Text anzeigen</button><button data-a="copy">Kopieren</button><button data-a="file">Als Datei sichern</button></div></div>';
+ else if(v=='data')a.innerHTML='<h1>Daten</h1><div class="c"><div class="m">Backup als Text: Export kopieren und ablegen. Beim Import werden Stand und Anzahl verglichen, ersetzt wird erst beim zweiten Druck auf Import.</div><label class="filelabel">Textdatei auswählen (.txt)<input id="fi" type="file" accept=".txt,.json,text/plain"></label><textarea id="io"></textarea><div class="m" id="ic"></div><div class="row data-actions"><button data-a="imp">Import</button><button data-a="file">Als Datei sichern</button><button data-a="exp">Text anzeigen</button><button data-a="copy">Kopieren</button></div></div>';
  else if(v=='ana')a.innerHTML=ana();
  else if(v=='rec')a.innerHTML=recView();
  else a.innerHTML='<h1>Bohnen</h1>'+entList('beans')}
