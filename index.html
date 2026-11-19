@@ -223,7 +223,7 @@ function render(){nav();const a=document.getElementById('app');
  else a.innerHTML='<h1>Bohnen</h1>'+entList('beans')}
 
 document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b)return;const a=b.dataset.a,k=b.dataset.k,id=b.dataset.id;
- if(a=='tab'){const next=b.dataset.v;edit=null;v=next;delArm=null;render()}
+ if(a=='tab'){const next=b.dataset.v;edit=null;delArm=null;document.getElementById('ov').hidden=true;v=next;render();window.scrollTo(0,0)}
  else if(a=='add')entForm(k);else if(a=='edit')entForm(k,id);
  else if(a=='radd')recForm();else if(a=='redit')recForm(id);
  else if(a=='rdel'){if(delArm==id){db.recipes=rec().filter(o=>o.id!=id);delArm=null;save()}else delArm=id;render()}
