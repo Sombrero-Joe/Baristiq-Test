@@ -28,7 +28,7 @@ nav button.on{color:var(--ac);font-weight:600}
 textarea{min-height:90px}
 #version{position:fixed;top:4px;right:7px;z-index:20;padding:2px 6px;border-radius:6px;background:var(--bg);color:var(--mut);font-size:10px;line-height:1.3;opacity:.85;pointer-events:none}
 </style></head><body><main id="app"></main><div id="ov" hidden></div>
-<div id="version">TEST · 2026.11.19 · 03</div><nav id="nav"></nav>
+<div id="version">TEST · 2026.11.19 · 04</div><nav id="nav"></nav>
 <script>
 const K='espresso-v1',EQ=['machines','portafilters','baskets','grinders','scales'];
 const T={
@@ -157,8 +157,8 @@ function canonicalMethod(value){
  return aliases[key]||value;
 }
 function updatePrepTemplates(f){
- const method=canonicalMethod(f.querySelector('#pm').value),sel=f.querySelector('#pt'),old=sel.value;
- const matches=rec().filter(r=>canonicalMethod(r.method)===method);
+ const drink=f.querySelector('#pd').value,sel=f.querySelector('#pt'),old=sel.value;
+ const matches=rec().filter(r=>String(r.type||'').trim()===drink);
  sel.innerHTML='<option value="standard">Kein Rezept – Standardkonfiguration</option>'+matches.map(r=>'<option value="'+esc(r.id)+'">'+esc(r.name)+'</option>').join('');
  sel.value=matches.some(r=>r.id===old)?old:'standard';
 }
@@ -265,7 +265,7 @@ document.addEventListener('submit',e=>{e.preventDefault();const f=e.target,d=Obj
   save();edit=null;v='shots';render()}});
 document.addEventListener('input',e=>{const t=e.target;if(t.form?.id=='pf'&&t.name=='rate')document.getElementById('prate').textContent=t.value;if(t.id=='tr')t.form.temp.value=t.value;else if(t.name=='temp'){const r=document.getElementById('tr');if(r)r.value=t.value}if(t.closest('#sf')){if(t.name=='grind'||t.name=='gmm')gsync(t.name);calc();plan()}});
 document.addEventListener('change',e=>{if(e.target.id=='fi'){const fl=e.target.files[0];if(fl){const rd=new FileReader();rd.onload=()=>{document.getElementById('io').value=rd.result;pend=null;document.querySelector('[data-a=imp]').click()};rd.readAsText(fl)}}
- if(e.target.id=='pm'&&e.target.form?.id=='pf'){e.target.form.querySelector('#pd').value=methodConfig(e.target.value).drink;updatePrepTemplates(e.target.form);applyPrepDefaults(e.target.form)}if((e.target.id=='pd'||e.target.id=='pt')&&e.target.form?.id=='pf')applyPrepDefaults(e.target.form);if(e.target.id=='ft'){ftype=e.target.value;render()}if(e.target.id=='flt'){filt=e.target.value;render()}if(e.target.closest('#rf')&&e.target.name=='type'){const P=RP[e.target.value]||{},E=e.target.form.elements;['milk','water','mt','cup','foam'].forEach(k=>{if(E[k].value===''&&P[k]!=null)E[k].value=P[k]});if(!E.how.value&&P.m)E.how.value=P.m}
+ if(e.target.id=='pm'&&e.target.form?.id=='pf'){e.target.form.querySelector('#pd').value=methodConfig(e.target.value).drink;updatePrepTemplates(e.target.form);applyPrepDefaults(e.target.form)}if(e.target.id=='pd'&&e.target.form?.id=='pf'){updatePrepTemplates(e.target.form);applyPrepDefaults(e.target.form)}if(e.target.id=='pt'&&e.target.form?.id=='pf')applyPrepDefaults(e.target.form);if(e.target.id=='ft'){ftype=e.target.value;render()}if(e.target.id=='flt'){filt=e.target.value;render()}if(e.target.closest('#rf')&&e.target.name=='type'){const P=RP[e.target.value]||{},E=e.target.form.elements;['milk','water','mt','cup','foam'].forEach(k=>{if(E[k].value===''&&P[k]!=null)E[k].value=P[k]});if(!E.how.value&&P.m)E.how.value=P.m}
  if(e.target.id=='xs'){xk=e.target.value;render()}if(e.target.closest('#sf')){const n=e.target.name;if(n=='machines')tempUI();if(n=='grinders')gridUI();if(n=='gmm'&&e.target.type=='number')gsync('grind');if(n=='beans'){const b=find('beans',e.target.value);if(b&&b.ratio)e.target.form.tratio.value=b.ratio}if(n=='beans'||n=='baskets'||n=='scales')plan()}});
 render();
 </script></body></html>
