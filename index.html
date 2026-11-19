@@ -143,20 +143,20 @@ const methodConfig=k=>METHODS[k]||METHODS[(k||'').replace(' (Percolation)','').r
 const methodOptions=selected=>Object.entries(METHOD_GROUPS).map(([g,ks])=>`<optgroup label="${g}">${ks.map(k=>`<option value="${k}"${(selected||'Espressomaschine')==k?' selected':''}>${k}</option>`).join('')}</optgroup>`).join('');
 const DRINKS=['Espresso','Ristretto','Lungo','Americano','Macchiato','Cortado','Flat White','Cappuccino','Café Latte','Latte Macchiato','Mocha','Affogato','Filterkaffee','French Press','AeroPress','Mokka','Eigene'];
 function updatePrepTemplates(f){
- const m=f.elements.method.value,sel=f.elements.template,old=sel.value;
- const matches=rec().filter(r=>r.method===m);
- sel.innerHTML='<option value="standard">Standardkonfiguration</option>'+matches.map(r=>'<option value="'+r.id+'">Rezept: '+esc(r.name)+'</option>').join('');
+ const method=f.querySelector('#pm').value,sel=f.querySelector('#pt'),old=sel.value;
+ const matches=rec().filter(r=>r.method===method);
+ sel.innerHTML='<option value="standard">Kein Rezept – Standardkonfiguration</option>'+matches.map(r=>'<option value="'+r.id+'">'+esc(r.name)+'</option>').join('');
  sel.value=matches.some(r=>r.id===old)?old:'standard';
 }
 function applyPrepDefaults(f){
- const method=f.elements.method.value,x=methodConfig(method),template=f.elements.template.value;
+ const method=f.querySelector('#pm').value,x=methodConfig(method),template=f.querySelector('#pt').value;
  const recipe=template!=='standard'?rec().find(r=>r.id===template):null;
- const drink=recipe?recipe.type:f.elements.drink.value,p=RP[drink]||{};
- if(recipe)f.elements.drink.value=drink;
+ const drink=recipe?recipe.type:f.querySelector('#pd').value,p=RP[drink]||{};
+ if(recipe)f.querySelector('#pd').value=drink;
  const shot=recipe&&recipe.base?find('shots',recipe.base):null;
  const vals={dose:shot?.dose??x.dose,output:shot?.yield??x.output,time:shot?.time??x.time,temp:shot?.temp??x.temp,water:recipe?.water??p.water??x.water,milk:recipe?.milk??p.milk??x.milk,mt:recipe?.mt??p.mt??x.mt,foam:recipe?.foam??p.foam??x.foam};
- Object.entries(vals).forEach(([k,v])=>{if(f.elements[k])f.elements[k].value=v??0});
- document.getElementById('phelp').textContent=recipe?'Rezept „'+recipe.name+'“ geladen. Werte können für diese Zubereitung angepasst werden. '+(recipe.how||x.how):x.how;
+ Object.entries(vals).forEach(([k,v])=>{const el=f.querySelector('[name="'+k+'"]');if(el)el.value=v??0});
+ const help=f.querySelector('#phelp');if(help)help.textContent=recipe?'Rezept „'+recipe.name+'“ geladen. Werte können für diese Zubereitung angepasst werden. '+(recipe.how||x.how):x.how;
 }
 function prepSuggestion(){
  const h=db.preps.filter(p=>p.method==='Espressomaschine'&&p.drink==='Espresso');
@@ -251,7 +251,7 @@ document.addEventListener('submit',e=>{e.preventDefault();const f=e.target,d=Obj
   save();edit=null;v='shots';render()}});
 document.addEventListener('input',e=>{const t=e.target;if(t.form?.id=='pf'&&t.name=='rate')document.getElementById('prate').textContent=t.value;if(t.id=='tr')t.form.temp.value=t.value;else if(t.name=='temp'){const r=document.getElementById('tr');if(r)r.value=t.value}if(t.closest('#sf')){if(t.name=='grind'||t.name=='gmm')gsync(t.name);calc();plan()}});
 document.addEventListener('change',e=>{if(e.target.id=='fi'){const fl=e.target.files[0];if(fl){const rd=new FileReader();rd.onload=()=>{document.getElementById('io').value=rd.result;pend=null;document.querySelector('[data-a=imp]').click()};rd.readAsText(fl)}}
- if(e.target.id=='pm'&&e.target.form?.id=='pf'){e.target.form.drink.value=methodConfig(e.target.value).drink;updatePrepTemplates(e.target.form);applyPrepDefaults(e.target.form)}if((e.target.id=='pd'||e.target.id=='pt')&&e.target.form?.id=='pf')applyPrepDefaults(e.target.form);if(e.target.id=='ft'){ftype=e.target.value;render()}if(e.target.id=='flt'){filt=e.target.value;render()}if(e.target.closest('#rf')&&e.target.name=='type'){const P=RP[e.target.value]||{},E=e.target.form.elements;['milk','water','mt','cup','foam'].forEach(k=>{if(E[k].value===''&&P[k]!=null)E[k].value=P[k]});if(!E.how.value&&P.m)E.how.value=P.m}
+ if(e.target.id=='pm'&&e.target.form?.id=='pf'){e.target.form.querySelector('#pd').value=methodConfig(e.target.value).drink;updatePrepTemplates(e.target.form);applyPrepDefaults(e.target.form)}if((e.target.id=='pd'||e.target.id=='pt')&&e.target.form?.id=='pf')applyPrepDefaults(e.target.form);if(e.target.id=='ft'){ftype=e.target.value;render()}if(e.target.id=='flt'){filt=e.target.value;render()}if(e.target.closest('#rf')&&e.target.name=='type'){const P=RP[e.target.value]||{},E=e.target.form.elements;['milk','water','mt','cup','foam'].forEach(k=>{if(E[k].value===''&&P[k]!=null)E[k].value=P[k]});if(!E.how.value&&P.m)E.how.value=P.m}
  if(e.target.id=='xs'){xk=e.target.value;render()}if(e.target.closest('#sf')){const n=e.target.name;if(n=='machines')tempUI();if(n=='grinders')gridUI();if(n=='gmm'&&e.target.type=='number')gsync('grind');if(n=='beans'){const b=find('beans',e.target.value);if(b&&b.ratio)e.target.form.tratio.value=b.ratio}if(n=='beans'||n=='baskets'||n=='scales')plan()}});
 render();
 </script></body></html>
