@@ -28,7 +28,7 @@ nav button.on{color:var(--ac);font-weight:600}
 textarea{min-height:90px}
 #version{position:fixed;top:4px;right:7px;z-index:20;padding:2px 6px;border-radius:6px;background:var(--bg);color:var(--mut);font-size:10px;line-height:1.3;opacity:.85;pointer-events:none}
 </style></head><body><main id="app"></main><div id="ov" hidden></div>
-<div id="version">TEST · 2026.11.19 · 05</div><nav id="nav"></nav>
+<div id="version">TEST · 2026.11.19 · 06</div><nav id="nav"></nav>
 <script>
 const K='espresso-v1',EQ=['machines','portafilters','baskets','grinders','scales'];
 const T={
@@ -183,9 +183,8 @@ function prepSuggestion(){
 function brewView(){
  if(!prepNew){
   const list=db.preps.slice().reverse();
-  return '<h1>Zubereiten</h1><h2>Gespeicherte Zubereitungen</h2>'+
+  return '<h1>Zubereiten</h1><div class="row"><button class="p" data-a="prepadd">+ Neue Zubereitung</button></div><h2>Gespeicherte Zubereitungen</h2>'+
    (list.length?list.map(p=>`<div class="c"><b>${esc(p.recipeName||p.drink||'Zubereitung')} · ${esc(p.method||'')}</b><div class="m">${esc(p.date||'')} · Bewertung ${p.rate??'–'}/10</div><div>${esc(p.dose??'–')} g Kaffee · ${esc(p.output??'–')} g/ml · ${esc(p.time??'–')} s · ${esc(p.temp??'–')} °C</div>${p.water?'<div>Wasser: '+esc(p.water)+' ml</div>':''}${p.milk?'<div>Milch: '+esc(p.milk)+' ml</div>':''}${p.taste?.length?'<div class="m">Geschmack: '+esc(p.taste.join(', '))+'</div>':''}${p.note?'<div>Notiz: '+esc(p.note)+'</div>':''}</div>`).join(''):'<div class="c m">Noch keine Zubereitungen gespeichert.</div>')+
-   '<div class="row"><button class="p" data-a="prepadd">+ Neue Zubereitung</button></div>'+
    '<div class="c"><b>Verbesserungshinweis</b><div>'+esc(prepSuggestion())+'</div><div class="m">Orientierung, keine sichere Diagnose. Möglichst nur eine Variable auf einmal ändern.</div></div>';
  }
  const dr=DRINKS;
