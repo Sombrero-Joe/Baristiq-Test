@@ -25,10 +25,10 @@ nav button.on{color:var(--ac);font-weight:600}
 #ov{position:fixed;inset:0;background:rgba(0,0,0,.5);overflow:auto;padding:12px}
 #ov .c{max-width:520px;margin:20px auto}
 .k{font-size:20px;font-weight:600;color:var(--ac)}
-textarea{min-height:90px}
+textarea{min-height:90px}.filelabel{font-size:16px;color:var(--fg);font-weight:600;margin-top:12px}.filelabel input[type=file]{display:block;font-size:16px;padding:12px;margin-top:6px;min-height:48px;width:100%}
 #version{position:fixed;top:4px;right:7px;z-index:20;padding:2px 6px;border-radius:6px;background:var(--bg);color:var(--mut);font-size:10px;line-height:1.3;opacity:.85;pointer-events:none}
 </style></head><body><main id="app"></main><div id="ov" hidden></div>
-<div id="version">TEST · 2026.11.19 · 06</div><nav id="nav"></nav>
+<div id="version">TEST · 2026.11.19 · 07</div><nav id="nav"></nav>
 <script>
 const K='espresso-v1',EQ=['machines','portafilters','baskets','grinders','scales'];
 const T={
@@ -53,7 +53,7 @@ const find=(k,id)=>db[k].find(o=>o.id==id);
 const tl=o=>(o.tlist||'').split(/[;\s]+/).map(x=>parseFloat(x.replace(',','.'))).filter(x=>!isNaN(x));
 const hasR=o=>o.tmin!==''&&o.tmin!=null&&o.tmax!==''&&o.tmax!=null;
 const tinfo=o=>{const L=tl(o);return L.length?`<div class="m">Temperaturstufen: ${L.join(' / ')} °C</div>`:hasR(o)?`<div class="m">${nf(o.tmin)} bis ${nf(o.tmax)} °C in ${nf(o.tstep||1,2)}-°C-Schritten (${Math.floor((o.tmax-o.tmin)/(o.tstep||1))+1} Stufen)</div>`:''};
-let v='brew',edit=null,filt='',ftype='',delArm=null,xk='temp',prepNew=false;
+let v='brew',edit=null,filt='',ftype='',delArm=null,xk='temp',prepNew=false,prepEdit=null;
 
 function nav(){document.getElementById('nav').innerHTML=[['brew','Zubereiten'],['rec','Rezepte'],['shots','Shots'],['beans','Bohnen'],['eq','Equipment'],['ana','Auswertung'],['data','Daten']].map(([a,b])=>`<button data-a="tab" data-v="${a}" class="${v==a?'on':''}">${b}</button>`).join('')}
 
@@ -184,11 +184,11 @@ function brewView(){
  if(!prepNew){
   const list=db.preps.slice().reverse();
   return '<h1>Zubereiten</h1><div class="row"><button class="p" data-a="prepadd">+ Neue Zubereitung</button></div><h2>Gespeicherte Zubereitungen</h2>'+
-   (list.length?list.map(p=>`<div class="c"><b>${esc(p.recipeName||p.drink||'Zubereitung')} · ${esc(p.method||'')}</b><div class="m">${esc(p.date||'')} · Bewertung ${p.rate??'–'}/10</div><div>${esc(p.dose??'–')} g Kaffee · ${esc(p.output??'–')} g/ml · ${esc(p.time??'–')} s · ${esc(p.temp??'–')} °C</div>${p.water?'<div>Wasser: '+esc(p.water)+' ml</div>':''}${p.milk?'<div>Milch: '+esc(p.milk)+' ml</div>':''}${p.taste?.length?'<div class="m">Geschmack: '+esc(p.taste.join(', '))+'</div>':''}${p.note?'<div>Notiz: '+esc(p.note)+'</div>':''}</div>`).join(''):'<div class="c m">Noch keine Zubereitungen gespeichert.</div>')+
+   (list.length?list.map(p=>`<div class="c"><b>${esc(p.recipeName||p.drink||'Zubereitung')} · ${esc(p.method||'')}</b><div class="m">${esc(p.date||'')} · Bewertung ${p.rate??'–'}/10</div><div>${esc(p.dose??'–')} g Kaffee · ${esc(p.output??'–')} g/ml · ${esc(p.time??'–')} s · ${esc(p.temp??'–')} °C</div>${p.water?'<div>Wasser: '+esc(p.water)+' ml</div>':''}${p.milk?'<div>Milch: '+esc(p.milk)+' ml</div>':''}${p.taste?.length?'<div class="m">Geschmack: '+esc(p.taste.join(', '))+'</div>':''}${p.note?'<div>Notiz: '+esc(p.note)+'</div>':''}<div class="row"><button data-a="prepedit" data-id="${p.id}">Bearbeiten</button><button data-a="prepdel" data-id="${p.id}">${delArm==p.id?'Sicher löschen?':'Löschen'}</button></div></div>`).join(''):'<div class="c m">Noch keine Zubereitungen gespeichert.</div>')+
    '<div class="c"><b>Verbesserungshinweis</b><div>'+esc(prepSuggestion())+'</div><div class="m">Orientierung, keine sichere Diagnose. Möglichst nur eine Variable auf einmal ändern.</div></div>';
  }
  const dr=DRINKS;
- return '<h1>Neue Zubereitung</h1><div class="row"><button data-a="preplist">Zurück zur Übersicht</button></div><div class="c"><form id="pf">'+
+ return '<h1>'+(prepEdit?'Zubereitung bearbeiten':'Neue Zubereitung')+'</h1><div class="row"><button data-a="preplist">Zurück zur Übersicht</button></div><div class="c"><form id="pf">'+
  '<label>Zubereitungsart<select name="method" id="pm">'+methodOptions()+'</select></label>'+
  '<label>Getränkeart<select name="drink" id="pd">'+dr.map(x=>'<option'+(x===methodConfig('Espressomaschine').drink?' selected':'')+'>'+x+'</option>').join('')+'</select></label>'+
  '<label>Rezept<select name="template" id="pt"><option value="standard">Kein Rezept – Standardkonfiguration</option></select></label>'+
@@ -196,7 +196,7 @@ function brewView(){
  [['dose','Kaffeemenge / Dosis (g)',18],['output','Kaffee-Ausbeute (g/ml)',36],['water','Wassermenge (ml)',0],['milk','Milchmenge (ml)',0],['time','Brühzeit (Sek.)',28],['temp','Temperatur (°C)',93],['mt','Milchtemperatur (°C)',60],['foam','Schaumanteil (%)',0]].map(x=>'<label>'+x[1]+'<input name="'+x[0]+'" type="number" step="any" value="'+x[2]+'"></label>').join('')+'</div>'+
  '<label>Geschmack – was trifft zu?</label><div class="g">'+['sauer','bitter','dünn','wässrig','zu kräftig','körperreich','süß','ausgewogen','adstringierend','flach'].map(x=>'<label><input type="checkbox" name="taste" value="'+x+'" style="width:auto"> '+x+'</label>').join('')+'</div>'+
  '<label>Bewertung: <span id="prate">7</span>/10<input name="rate" type="range" min="1" max="10" value="7"></label><label>Notizen<textarea name="note"></textarea></label>'+
- '<div class="row"><button class="p" type="submit">Zubereitung speichern</button></div></form></div>';
+ '<div class="row"><button class="p" type="submit">'+(prepEdit?'Änderungen speichern':'Zubereitung speichern')+'</button></div></form></div>';
 }
 
 const RP={
@@ -230,19 +230,19 @@ async function copyTxt(){const ic=document.getElementById('ic'),txt=JSON.stringi
 const fd=t=>t?new Date(t).toLocaleString('de-DE',{dateStyle:'short',timeStyle:'short'}):'unbekannt';
 const cnt=d=>`${(d.shots||[]).length} Shots, ${(d.beans||[]).length} Bohnen, ${(d.recipes||[]).length} Rezepte`;
 function render(){nav();const a=document.getElementById('app');
- if(v=='brew'){a.innerHTML=brewView();const pf=document.getElementById('pf');if(pf){updatePrepTemplates(pf);applyPrepDefaults(pf)}}
+ if(v=='brew'){a.innerHTML=brewView();const pf=document.getElementById('pf');if(pf){updatePrepTemplates(pf);if(prepEdit){const p=db.preps.find(x=>x.id===prepEdit);if(p){pf.querySelector('#pm').value=p.method||'Espressomaschine';pf.querySelector('#pd').value=p.drink||'Espresso';updatePrepTemplates(pf);pf.querySelector('#pt').value=p.recipeId||'standard';['dose','output','water','milk','time','temp','mt','foam','note','rate'].forEach(k=>{if(pf.elements[k])pf.elements[k].value=p[k]??''});pf.querySelectorAll('input[name=taste]').forEach(x=>x.checked=(p.taste||[]).includes(x.value));pf.querySelector('#prate').textContent=p.rate??7}else{prepEdit=null;applyPrepDefaults(pf)}}else applyPrepDefaults(pf)}}
  else if(v=='shots'){const l=db.shots.filter(s=>!ftype||(find('baskets',s.baskets)||{}).type==ftype).sort((x,y)=>(y.date+y.id).localeCompare(x.date+x.id));
   a.innerHTML=`<h1>Shots</h1><div class="row"><button class="p" data-a="tab" data-v="new">+ Neuer Shot</button></div><select id="ft"><option value="">Alle Shots</option>${[...new Set(db.baskets.map(b=>b.type).filter(Boolean))].map(t=>`<option${ftype==t?' selected':''}>${t}</option>`).join('')}</select>`+(l.length?l.map(shotCard).join(''):'<div class="c m">Noch keine Shots. Lege unter „Equipment“ und „Bohnen“ deine Ausstattung an und trage dann einen Shot ein.</div>')}
  else if(v=='new'){a.innerHTML=shotForm();tempUI();gridUI();calc();{const f=document.getElementById('sf'),b=find('beans',f.beans.value);if(!f.tratio.value&&b&&b.ratio)f.tratio.value=b.ratio;plan()}}
  else if(v=='eq'){a.innerHTML='<h1>Equipment</h1>'+EQ.map(entList).join('')+``}
- else if(v=='data')a.innerHTML='<h1>Daten</h1><div class="c"><div class="m">Backup als Text: Export kopieren und ablegen. Beim Import werden Stand und Anzahl verglichen, ersetzt wird erst beim zweiten Druck auf Import.</div><label>Aus Datei einlesen (.txt)<input id="fi" type="file" accept=".txt,.json,text/plain"></label><textarea id="io"></textarea><div class="m" id="ic"></div><div class="row"><button data-a="file">Als Datei sichern</button><button data-a="copy">Kopieren</button><button data-a="exp">Text anzeigen</button><button data-a="imp">Import</button></div></div>';
+ else if(v=='data')a.innerHTML='<h1>Daten</h1><div class="c"><div class="m">Backup als Text: Export kopieren und ablegen. Beim Import werden Stand und Anzahl verglichen, ersetzt wird erst beim zweiten Druck auf Import.</div><label class="filelabel">Textdatei auswählen (.txt)<input id="fi" type="file" accept=".txt,.json,text/plain"></label><textarea id="io"></textarea><div class="m" id="ic"></div><div class="row"><button data-a="imp">Import</button><button data-a="exp">Text anzeigen</button><button data-a="copy">Kopieren</button><button data-a="file">Als Datei sichern</button></div></div>';
  else if(v=='ana')a.innerHTML=ana();
  else if(v=='rec')a.innerHTML=recView();
  else a.innerHTML='<h1>Bohnen</h1>'+entList('beans')}
 
 document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b)return;const a=b.dataset.a,k=b.dataset.k,id=b.dataset.id;
- if(a=='tab'){const next=b.dataset.v;edit=null;delArm=null;prepNew=false;document.getElementById('ov').hidden=true;v=next;render();window.scrollTo(0,0)}
- else if(a=='prepadd'){prepNew=true;render();window.scrollTo(0,0)}else if(a=='preplist'){prepNew=false;render();window.scrollTo(0,0)}
+ if(a=='tab'){const next=b.dataset.v;edit=null;prepEdit=null;delArm=null;prepNew=false;document.getElementById('ov').hidden=true;v=next;render();window.scrollTo(0,0)}
+ else if(a=='prepadd'){prepEdit=null;prepNew=true;render();window.scrollTo(0,0)}else if(a=='preplist'){prepEdit=null;prepNew=false;render();window.scrollTo(0,0)}else if(a=='prepedit'){prepEdit=id;prepNew=true;render();window.scrollTo(0,0)}else if(a=='prepdel'){if(delArm==id){db.preps=db.preps.filter(p=>p.id!=id);delArm=null;save()}else delArm=id;render()}
  else if(a=='add')entForm(k);else if(a=='edit')entForm(k,id);
  else if(a=='radd')recForm();else if(a=='redit')recForm(id);
  else if(a=='rdel'){if(delArm==id){db.recipes=rec().filter(o=>o.id!=id);delArm=null;save()}else delArm=id;render()}
@@ -262,7 +262,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b
 document.addEventListener('submit',e=>{e.preventDefault();const f=e.target,d=Object.fromEntries(new FormData(f));
  if(f.id=='ef'){const k=f.dataset.k,id=f.dataset.id;if(!d.name?.trim())return;const o=id?find(k,id):{id:uid()};Object.assign(o,d);
   T[k].f.forEach(([n,,t])=>{if(t=='number')o[n]=d[n]===''?'':parseFloat(d[n])});if(!id)db[k].push(o);save();document.getElementById('ov').hidden=true;render()}
-  else if(f.id=='pf'){const taste=[...f.querySelectorAll('input[name=taste]:checked')].map(x=>x.value);const chosen=d.template&&d.template!=='standard'?rec().find(r=>r.id===d.template):null;db.preps.push({...d,recipeId:chosen?.id||'',recipeName:chosen?.name||'',method:d.method,drink:d.drink,id:uid(),date:today(),taste,rate:+d.rate});save();v='brew';prepNew=false;render()}
+  else if(f.id=='pf'){const taste=[...f.querySelectorAll('input[name=taste]:checked')].map(x=>x.value);const chosen=d.template&&d.template!=='standard'?rec().find(r=>r.id===d.template):null;const existing=prepEdit?db.preps.find(p=>p.id===prepEdit):null;const item={...d,recipeId:chosen?.id||'',recipeName:chosen?.name||'',method:d.method,drink:d.drink,id:existing?.id||uid(),date:existing?.date||today(),taste,rate:+d.rate};if(existing)Object.assign(existing,item);else db.preps.push(item);save();prepEdit=null;v='brew';prepNew=false;render()}
   else if(f.id=='rf'){if(!d.name?.trim()||!d.method)return;const L=rec(),id=f.dataset.id,o=id?L.find(x=>x.id==id):{id:uid()};Object.assign(o,d);o.method=d.method;['n','milk','mt','foam','water','cup'].forEach(k=>o[k]=d[k]===''?'':parseFloat(d[k]));const s=find('shots',o.base);o.snap=s?shl(s):'';if(!id)L.push(o);save();document.getElementById('ov').hidden=true;render()}
  else if(f.id=='sf'){const o=edit?find('shots',edit):{id:uid()};Object.assign(o,d);['dose','yield','time','temp','bar','tratio','tout','gmm'].forEach(n=>o[n]=d[n]===''?'':parseFloat(d[n]));
   o.rate=+d.rate;o.bal=+d.bal;o.snap={};[...EQ,'beans'].forEach(k=>{if(o[k])o.snap[k]=lbl(k,find(k,o[k]))});
