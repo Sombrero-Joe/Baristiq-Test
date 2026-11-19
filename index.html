@@ -28,7 +28,7 @@ nav button.on{color:var(--ac);font-weight:600}
 textarea{min-height:90px}.filelabel{font-size:16px;color:var(--fg);font-weight:600;margin-top:12px}.filelabel input[type=file]{display:block;font-size:16px;padding:12px;margin-top:6px;min-height:48px;width:100%}.filelabel input[type=file]::file-selector-button{font:inherit;font-size:18px;font-weight:600;padding:9px 14px;margin-right:12px;cursor:pointer}.data-actions [data-a="exp"]{margin-left:18px}
 #version{position:fixed;top:4px;right:7px;z-index:20;padding:2px 6px;border-radius:6px;background:var(--bg);color:var(--mut);font-size:10px;line-height:1.3;opacity:.85;pointer-events:none}
 </style></head><body><main id="app"></main><div id="ov" hidden></div>
-<div id="version">TEST · 2026.11.19 · 15</div><nav id="nav"></nav>
+<div id="version">TEST · 2026.11.19 · 16</div><nav id="nav"></nav>
 <script>
 const K='espresso-v1',EQ=['machines','portafilters','baskets','grinders','scales'];
 const T={
@@ -44,7 +44,8 @@ let db={};try{db=JSON.parse(localStorage.getItem(K))||{}}catch(e){}
 const save=()=>{db.mod=Date.now();try{localStorage.setItem(K,JSON.stringify(db))}catch(e){}};
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const nf=(n,d=1)=>Number(n).toLocaleString('de-DE',{maximumFractionDigits:d});
-const today=()=>new Date().toISOString().slice(0,10);
+const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+const currentTime=()=>{const d=new Date();return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')};
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 function lbl(k,o){if(!o)return'–';let s=o.name||'?';
  if(k=='beans'){const b=[o.roast,o.ara!==''&&o.ara!=null?`${nf(o.ara,0)} % Arabica / ${nf(100-o.ara,0)} % Robusta`:''].filter(Boolean);return s+(b.length?` (${b.join(', ')})`:'')}
@@ -182,13 +183,14 @@ function prepSuggestion(){
 }
 function brewView(){
  if(!prepNew){
-  const list=db.preps.slice().reverse();
+  const list=db.preps.slice().sort((a,b)=>(String(b.date||'')+' '+String(b.time||'')).localeCompare(String(a.date||'')+' '+String(a.time||'')));
   return '<h1>Zubereiten</h1><div class="row"><button class="p" data-a="prepadd">+ Neue Zubereitung</button></div><h2>Gespeicherte Zubereitungen</h2>'+
-   (list.length?list.map(p=>`<div class="c"><b>${esc(p.recipeName||p.drink||'Zubereitung')} · ${esc(p.method||'')}</b><div class="m">${esc(p.date||'')} · Bewertung ${p.rate??'–'}/10</div><div>${esc(p.dose??'–')} g Kaffee · ${esc(p.output??'–')} g/ml · ${esc(p.time??'–')} s · ${esc(p.temp??'–')} °C</div>${p.water!==''&&p.water!=null&&Number(p.water)!==0?'<div>Wasser: '+esc(p.water)+' ml</div>':''}${p.milk!==''&&p.milk!=null&&Number(p.milk)!==0?'<div>Milch: '+esc(p.milk)+' ml</div>':''}${p.taste?.length?'<div class="m">Geschmack: '+esc(p.taste.join(', '))+'</div>':''}${p.note?'<div>Notiz: '+esc(p.note)+'</div>':''}<div class="row"><button data-a="prepedit" data-id="${p.id}">Bearbeiten</button><button data-a="prepdel" data-id="${p.id}">${delArm==p.id?'Sicher löschen?':'Löschen'}</button></div></div>`).join(''):'<div class="c m">Noch keine Zubereitungen gespeichert.</div>')+
+   (list.length?list.map(p=>`<div class="c"><b>${esc(p.recipeName||p.drink||'Zubereitung')} · ${esc(p.method||'')}</b><div class="m">${esc(p.date||'')}${p.time?' · '+esc(p.time)+' Uhr':''} · Bewertung ${p.rate??'–'}/10</div><div>${esc(p.dose??'–')} g Kaffee · ${esc(p.output??'–')} g/ml · ${esc(p.time??'–')} s · ${esc(p.temp??'–')} °C</div>${p.water!==''&&p.water!=null&&Number(p.water)!==0?'<div>Wasser: '+esc(p.water)+' ml</div>':''}${p.milk!==''&&p.milk!=null&&Number(p.milk)!==0?'<div>Milch: '+esc(p.milk)+' ml</div>':''}${p.taste?.length?'<div class="m">Geschmack: '+esc(p.taste.join(', '))+'</div>':''}${p.note?'<div>Notiz: '+esc(p.note)+'</div>':''}<div class="row"><button data-a="prepedit" data-id="${p.id}">Bearbeiten</button><button data-a="prepdel" data-id="${p.id}">${delArm==p.id?'Sicher löschen?':'Löschen'}</button></div></div>`).join(''):'<div class="c m">Noch keine Zubereitungen gespeichert.</div>')+
    '<div class="c"><b>Verbesserungshinweis</b><div>'+esc(prepSuggestion())+'</div><div class="m">Orientierung, keine sichere Diagnose. Möglichst nur eine Variable auf einmal ändern.</div></div>';
  }
  const dr=DRINKS;
  return '<h1>'+(prepEdit?'Zubereitung bearbeiten':'Neue Zubereitung')+'</h1><div class="row"><button data-a="preplist">Zurück zur Übersicht</button></div><div class="c"><form id="pf">'+
+ '<div class="g"><label>Datum<input name="date" type="date" value="'+(prepEdit?'':today())+'"></label><label>Uhrzeit<input name="time" type="time" value="'+(prepEdit?'':currentTime())+'"></label></div>'+
  '<label>Zubereitungsart<select name="method" id="pm">'+methodOptions()+'</select></label>'+
  '<label>Getränkeart<select name="drink" id="pd">'+dr.map(x=>'<option'+(x===methodConfig('Espressomaschine').drink?' selected':'')+'>'+x+'</option>').join('')+'</select></label>'+
  '<label>Rezept<select name="template" id="pt"><option value="standard">Kein Rezept – Standardkonfiguration</option></select></label>'+
@@ -230,7 +232,7 @@ async function copyTxt(){const ic=document.getElementById('ic'),txt=JSON.stringi
 const fd=t=>t?new Date(t).toLocaleString('de-DE',{dateStyle:'short',timeStyle:'short'}):'unbekannt';
 const cnt=d=>`${(d.shots||[]).length} Shots, ${(d.beans||[]).length} Bohnen, ${(d.recipes||[]).length} Rezepte`;
 function render(){nav();const a=document.getElementById('app');
- if(v=='brew'){a.innerHTML=brewView();const pf=document.getElementById('pf');if(pf){updatePrepTemplates(pf);if(prepEdit){const p=db.preps.find(x=>x.id===prepEdit);if(p){pf.querySelector('#pm').value=p.method||'Espressomaschine';pf.querySelector('#pd').value=p.drink||'Espresso';updatePrepTemplates(pf);pf.querySelector('#pt').value=p.recipeId||'standard';['dose','output','water','milk','time','temp','mt','foam','note','rate'].forEach(k=>{if(pf.elements[k])pf.elements[k].value=p[k]??''});pf.querySelectorAll('input[name=taste]').forEach(x=>x.checked=(p.taste||[]).includes(x.value));pf.querySelector('#prate').textContent=p.rate??7}else{prepEdit=null;applyPrepDefaults(pf)}}else applyPrepDefaults(pf)}}
+ if(v=='brew'){a.innerHTML=brewView();const pf=document.getElementById('pf');if(pf){updatePrepTemplates(pf);if(prepEdit){const p=db.preps.find(x=>x.id===prepEdit);if(p){pf.querySelector('#pm').value=p.method||'Espressomaschine';pf.querySelector('#pd').value=p.drink||'Espresso';updatePrepTemplates(pf);pf.querySelector('#pt').value=p.recipeId||'standard';['date','time','dose','output','water','milk','time','temp','mt','foam','note','rate'].forEach(k=>{if(pf.elements[k])pf.elements[k].value=p[k]??''});pf.querySelectorAll('input[name=taste]').forEach(x=>x.checked=(p.taste||[]).includes(x.value));pf.querySelector('#prate').textContent=p.rate??7}else{prepEdit=null;applyPrepDefaults(pf)}}else applyPrepDefaults(pf)}}
  else if(v=='shots'){const l=db.shots.filter(s=>!ftype||(find('baskets',s.baskets)||{}).type==ftype).sort((x,y)=>(y.date+y.id).localeCompare(x.date+x.id));
   a.innerHTML=`<h1>Shots</h1><div class="row"><button class="p" data-a="tab" data-v="new">+ Neuer Shot</button></div><select id="ft"><option value="">Alle Shots</option>${[...new Set(db.baskets.map(b=>b.type).filter(Boolean))].map(t=>`<option${ftype==t?' selected':''}>${t}</option>`).join('')}</select>`+(l.length?l.map(shotCard).join(''):'<div class="c m">Noch keine Shots. Lege unter „Equipment“ und „Bohnen“ deine Ausstattung an und trage dann einen Shot ein.</div>')}
  else if(v=='new'){a.innerHTML=shotForm();tempUI();gridUI();calc();{const f=document.getElementById('sf'),b=find('beans',f.beans.value);if(!f.tratio.value&&b&&b.ratio)f.tratio.value=b.ratio;plan()}}
@@ -262,7 +264,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b
 document.addEventListener('submit',e=>{e.preventDefault();const f=e.target,d=Object.fromEntries(new FormData(f));
  if(f.id=='ef'){const k=f.dataset.k,id=f.dataset.id;if(!d.name?.trim())return;const o=id?find(k,id):{id:uid()};Object.assign(o,d);
   T[k].f.forEach(([n,,t])=>{if(t=='number')o[n]=d[n]===''?'':parseFloat(d[n])});if(!id)db[k].push(o);save();document.getElementById('ov').hidden=true;render()}
-  else if(f.id=='pf'){const taste=[...f.querySelectorAll('input[name=taste]:checked')].map(x=>x.value);const chosen=d.template&&d.template!=='standard'?rec().find(r=>r.id===d.template):null;const existing=prepEdit?db.preps.find(p=>p.id===prepEdit):null;const item={...d,recipeId:chosen?.id||'',recipeName:chosen?.name||'',method:d.method,drink:d.drink,id:existing?.id||uid(),date:existing?.date||today(),taste,rate:+d.rate};if(existing)Object.assign(existing,item);else db.preps.push(item);save();prepEdit=null;v='brew';prepNew=false;render()}
+  else if(f.id=='pf'){const taste=[...f.querySelectorAll('input[name=taste]:checked')].map(x=>x.value);const chosen=d.template&&d.template!=='standard'?rec().find(r=>r.id===d.template):null;const existing=prepEdit?db.preps.find(p=>p.id===prepEdit):null;const item={...d,recipeId:chosen?.id||'',recipeName:chosen?.name||'',method:d.method,drink:d.drink,id:existing?.id||uid(),date:d.date||today(),time:d.time||'',taste,rate:+d.rate};if(existing)Object.assign(existing,item);else db.preps.push(item);save();prepEdit=null;v='brew';prepNew=false;render()}
   else if(f.id=='rf'){if(!d.name?.trim()||!d.method)return;const L=rec(),id=f.dataset.id,o=id?L.find(x=>x.id==id):{id:uid()};Object.assign(o,d);o.method=d.method;['n','milk','mt','foam','water','cup'].forEach(k=>o[k]=d[k]===''?'':parseFloat(d[k]));const s=find('shots',o.base);o.snap=s?shl(s):'';if(!id)L.push(o);save();document.getElementById('ov').hidden=true;render()}
  else if(f.id=='sf'){const o=edit?find('shots',edit):{id:uid()};Object.assign(o,d);['dose','yield','time','temp','bar','tratio','tout','gmm'].forEach(n=>o[n]=d[n]===''?'':parseFloat(d[n]));
   o.rate=+d.rate;o.bal=+d.bal;o.snap={};[...EQ,'beans'].forEach(k=>{if(o[k])o.snap[k]=lbl(k,find(k,o[k]))});
