@@ -52,7 +52,7 @@ const find=(k,id)=>db[k].find(o=>o.id==id);
 const tl=o=>(o.tlist||'').split(/[;\s]+/).map(x=>parseFloat(x.replace(',','.'))).filter(x=>!isNaN(x));
 const hasR=o=>o.tmin!==''&&o.tmin!=null&&o.tmax!==''&&o.tmax!=null;
 const tinfo=o=>{const L=tl(o);return L.length?`<div class="m">Temperaturstufen: ${L.join(' / ')} °C</div>`:hasR(o)?`<div class="m">${nf(o.tmin)} bis ${nf(o.tmax)} °C in ${nf(o.tstep||1,2)}-°C-Schritten (${Math.floor((o.tmax-o.tmin)/(o.tstep||1))+1} Stufen)</div>`:''};
-let v='shots',edit=null,filt='',ftype='',delArm=null,xk='temp';
+let v='brew',edit=null,filt='',ftype='',delArm=null,xk='temp';
 
 function nav(){document.getElementById('nav').innerHTML=[['brew','Zubereiten'],['rec','Rezepte'],['shots','Shot'],['new','+ Shot'],['beans','Bohnen'],['eq','Equipment'],['ana','Auswertung'],['data','Daten']].map(([a,b])=>`<button data-a="tab" data-v="${a}" class="${v==a?'on':''}">${b}</button>`).join('')}
 
@@ -142,10 +142,21 @@ const METHOD_GROUPS={'Percolation – Durchlaufverfahren':['Espressomaschine','H
 const methodConfig=k=>METHODS[k]||METHODS[(k||'').replace(' (Percolation)','').replace(' (Immersion)','')]||METHODS.Espressomaschine;
 const methodOptions=selected=>Object.entries(METHOD_GROUPS).map(([g,ks])=>`<optgroup label="${g}">${ks.map(k=>`<option value="${k}"${(selected||'Espressomaschine')==k?' selected':''}>${k}</option>`).join('')}</optgroup>`).join('');
 const DRINKS=['Espresso','Ristretto','Lungo','Americano','Macchiato','Cortado','Flat White','Cappuccino','Café Latte','Latte Macchiato','Mocha','Affogato','Filterkaffee','French Press','AeroPress','Mokka','Eigene'];
+function updatePrepTemplates(f){
+ const m=f.elements.method.value,sel=f.elements.template,old=sel.value;
+ const matches=rec().filter(r=>r.method===m);
+ sel.innerHTML='<option value="standard">Standardkonfiguration</option>'+matches.map(r=>'<option value="'+r.id+'">Rezept: '+esc(r.name)+'</option>').join('');
+ sel.value=matches.some(r=>r.id===old)?old:'standard';
+}
 function applyPrepDefaults(f){
- const x=methodConfig(f.elements.method.value),p=RP[f.elements.drink.value]||{};
- ['dose','output','time','temp','water','milk','mt','foam'].forEach(k=>{if(f.elements[k])f.elements[k].value=(k==='output'?x.output:(p[k]!==undefined?p[k]:x[k]))??0});
- document.getElementById('phelp').textContent=x.how;
+ const method=f.elements.method.value,x=methodConfig(method),template=f.elements.template.value;
+ const recipe=template!=='standard'?rec().find(r=>r.id===template):null;
+ const drink=recipe?recipe.type:f.elements.drink.value,p=RP[drink]||{};
+ if(recipe)f.elements.drink.value=drink;
+ const shot=recipe&&recipe.base?find('shots',recipe.base):null;
+ const vals={dose:shot?.dose??x.dose,output:shot?.yield??x.output,time:shot?.time??x.time,temp:shot?.temp??x.temp,water:recipe?.water??p.water??x.water,milk:recipe?.milk??p.milk??x.milk,mt:recipe?.mt??p.mt??x.mt,foam:recipe?.foam??p.foam??x.foam};
+ Object.entries(vals).forEach(([k,v])=>{if(f.elements[k])f.elements[k].value=v??0});
+ document.getElementById('phelp').textContent=recipe?'Rezept „'+recipe.name+'“ geladen. Werte können für diese Zubereitung angepasst werden. '+(recipe.how||x.how):x.how;
 }
 function prepSuggestion(){
  const h=db.preps.filter(p=>p.method==='Espressomaschine'&&p.drink==='Espresso');
@@ -159,15 +170,15 @@ function brewView(){
  const dr=DRINKS;
  return '<h1>Zubereiten</h1><div class="c"><b>Neue Zubereitung</b><form id="pf">'+
  '<label>Zubereitungsart<select name="method" id="pm">'+methodOptions()+'</select></label>'+
- '<label>Getränkeart<select name="drink" id="pd">'+dr.map(x=>'<option>'+x+'</option>').join('')+'</select></label>'+
- '<label>Vorlage<select name="template" id="pt"><option value="standard">Standardkonfiguration</option>'+rec().map(x=>'<option value="'+x.id+'">Eigenes Rezept: '+esc(x.name)+'</option>').join('')+'</select></label>'+
+ '<label>Getränkeart<select name="drink" id="pd">'+dr.map(x=>'<option'+(x===methodConfig('Espressomaschine').drink?' selected':'')+'>'+x+'</option>').join('')+'</select></label>'+
+ '<label>Rezept<select name="template" id="pt"><option value="standard">Kein Rezept – Standardkonfiguration</option>'+rec().filter(x=>x.method==='Espressomaschine').map(x=>'<option value="'+x.id+'">'+esc(x.name)+'</option>').join('')+'</select></label>'+
  '<div class="m" id="phelp">Standardwerte sind ein anpassbarer Ausgangspunkt.</div><div class="g">'+
  [['dose','Kaffeemenge / Dosis (g)',18],['output','Kaffee-Ausbeute (g/ml)',36],['water','Wassermenge (ml)',0],['milk','Milchmenge (ml)',0],['time','Brühzeit (Sek.)',28],['temp','Temperatur (°C)',93],['mt','Milchtemperatur (°C)',60],['foam','Schaumanteil (%)',0]].map(x=>'<label>'+x[1]+'<input name="'+x[0]+'" type="number" step="any" value="'+x[2]+'"></label>').join('')+'</div>'+
  '<label>Geschmack – was trifft zu?</label><div class="g">'+['sauer','bitter','dünn','wässrig','zu kräftig','körperreich','süß','ausgewogen','adstringierend','flach'].map(x=>'<label><input type="checkbox" name="taste" value="'+x+'" style="width:auto"> '+x+'</label>').join('')+'</div>'+
  '<label>Bewertung: <span id="prate">7</span>/10<input name="rate" type="range" min="1" max="10" value="7"></label><label>Notizen<textarea name="note"></textarea></label>'+
  '<div class="row"><button class="p" type="submit">Zubereitung speichern</button></div></form></div>'+
  '<div class="c"><b>Verbesserungshinweis</b><div>'+esc(prepSuggestion())+'</div><div class="m">Orientierung, keine sichere Diagnose. Möglichst nur eine Variable auf einmal ändern.</div></div>'+
- '<h2>Letzte Zubereitungen</h2>'+(db.preps.length?db.preps.slice().reverse().slice(0,10).map(p=>'<div class="c"><b>'+esc(p.drink)+' · '+esc(p.method)+'</b><div class="m">'+esc(p.date)+' · '+p.rate+'/10 · '+esc((p.taste||[]).join(', '))+'</div><div>'+p.dose+' g · '+p.output+' g/ml · '+p.time+' s</div>'+(p.note?'<div>'+esc(p.note)+'</div>':'')+'</div>').join(''):'<div class="m">Noch keine Zubereitungen dokumentiert.</div>');
+ '<h2>Letzte Zubereitungen</h2>'+(db.preps.length?db.preps.slice().reverse().slice(0,10).map(p=>'<div class="c"><b>'+esc(p.recipeName||p.drink)+' · '+esc(p.method)+'</b><div class="m">'+esc(p.date)+' · '+p.rate+'/10 · '+esc((p.taste||[]).join(', '))+'</div><div>'+p.dose+' g · '+p.output+' g/ml · '+p.time+' s</div>'+(p.note?'<div>'+esc(p.note)+'</div>':'')+'</div>').join(''):'<div class="m">Noch keine Zubereitungen dokumentiert.</div>');
 }
 
 const RP={
@@ -201,7 +212,7 @@ async function copyTxt(){const ic=document.getElementById('ic'),txt=JSON.stringi
 const fd=t=>t?new Date(t).toLocaleString('de-DE',{dateStyle:'short',timeStyle:'short'}):'unbekannt';
 const cnt=d=>`${(d.shots||[]).length} Shots, ${(d.beans||[]).length} Bohnen, ${(d.recipes||[]).length} Rezepte`;
 function render(){nav();const a=document.getElementById('app');
- if(v=='brew'){a.innerHTML=brewView();const pf=document.getElementById('pf');applyPrepDefaults(pf)}
+ if(v=='brew'){a.innerHTML=brewView();const pf=document.getElementById('pf');updatePrepTemplates(pf);applyPrepDefaults(pf)}
  else if(v=='shots'){const l=db.shots.filter(s=>!ftype||(find('baskets',s.baskets)||{}).type==ftype).sort((x,y)=>(y.date+y.id).localeCompare(x.date+x.id));
   a.innerHTML=`<h1>Baristiq Studio</h1><select id="ft"><option value="">Alle Shots</option>${[...new Set(db.baskets.map(b=>b.type).filter(Boolean))].map(t=>`<option${ftype==t?' selected':''}>${t}</option>`).join('')}</select>`+(l.length?l.map(shotCard).join(''):'<div class="c m">Noch keine Shots. Lege unter „Equipment“ und „Bohnen“ deine Ausstattung an und trage dann einen Shot ein.</div>')}
  else if(v=='new'){a.innerHTML=shotForm();tempUI();gridUI();calc();{const f=document.getElementById('sf'),b=find('beans',f.beans.value);if(!f.tratio.value&&b&&b.ratio)f.tratio.value=b.ratio;plan()}}
@@ -232,7 +243,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b
 document.addEventListener('submit',e=>{e.preventDefault();const f=e.target,d=Object.fromEntries(new FormData(f));
  if(f.id=='ef'){const k=f.dataset.k,id=f.dataset.id;if(!d.name?.trim())return;const o=id?find(k,id):{id:uid()};Object.assign(o,d);
   T[k].f.forEach(([n,,t])=>{if(t=='number')o[n]=d[n]===''?'':parseFloat(d[n])});if(!id)db[k].push(o);save();document.getElementById('ov').hidden=true;render()}
-  else if(f.id=='pf'){const taste=[...f.querySelectorAll('input[name=taste]:checked')].map(x=>x.value);db.preps.push({...d,id:uid(),date:today(),taste,rate:+d.rate});save();v='brew';render()}
+  else if(f.id=='pf'){const taste=[...f.querySelectorAll('input[name=taste]:checked')].map(x=>x.value);const chosen=d.template&&d.template!=='standard'?rec().find(r=>r.id===d.template):null;db.preps.push({...d,recipeId:chosen?.id||'',recipeName:chosen?.name||'',method:d.method,drink:d.drink,id:uid(),date:today(),taste,rate:+d.rate});save();v='brew';render()}
   else if(f.id=='rf'){if(!d.name?.trim()||!d.method)return;const L=rec(),id=f.dataset.id,o=id?L.find(x=>x.id==id):{id:uid()};Object.assign(o,d);o.method=d.method;['n','milk','mt','foam','water','cup'].forEach(k=>o[k]=d[k]===''?'':parseFloat(d[k]));const s=find('shots',o.base);o.snap=s?shl(s):'';if(!id)L.push(o);save();document.getElementById('ov').hidden=true;render()}
  else if(f.id=='sf'){const o=edit?find('shots',edit):{id:uid()};Object.assign(o,d);['dose','yield','time','temp','bar','tratio','tout','gmm'].forEach(n=>o[n]=d[n]===''?'':parseFloat(d[n]));
   o.rate=+d.rate;o.bal=+d.bal;o.snap={};[...EQ,'beans'].forEach(k=>{if(o[k])o.snap[k]=lbl(k,find(k,o[k]))});
@@ -240,7 +251,7 @@ document.addEventListener('submit',e=>{e.preventDefault();const f=e.target,d=Obj
   save();edit=null;v='shots';render()}});
 document.addEventListener('input',e=>{const t=e.target;if(t.form?.id=='pf'&&t.name=='rate')document.getElementById('prate').textContent=t.value;if(t.id=='tr')t.form.temp.value=t.value;else if(t.name=='temp'){const r=document.getElementById('tr');if(r)r.value=t.value}if(t.closest('#sf')){if(t.name=='grind'||t.name=='gmm')gsync(t.name);calc();plan()}});
 document.addEventListener('change',e=>{if(e.target.id=='fi'){const fl=e.target.files[0];if(fl){const rd=new FileReader();rd.onload=()=>{document.getElementById('io').value=rd.result;pend=null;document.querySelector('[data-a=imp]').click()};rd.readAsText(fl)}}
- if(e.target.id=='pm'&&e.target.form?.id=='pf'){e.target.form.drink.value=methodConfig(e.target.value).drink;applyPrepDefaults(e.target.form)}if(e.target.id=='pd'&&e.target.form?.id=='pf')applyPrepDefaults(e.target.form);if(e.target.id=='ft'){ftype=e.target.value;render()}if(e.target.id=='flt'){filt=e.target.value;render()}if(e.target.closest('#rf')&&e.target.name=='type'){const P=RP[e.target.value]||{},E=e.target.form.elements;['milk','water','mt','cup','foam'].forEach(k=>{if(E[k].value===''&&P[k]!=null)E[k].value=P[k]});if(!E.how.value&&P.m)E.how.value=P.m}
+ if(e.target.id=='pm'&&e.target.form?.id=='pf'){e.target.form.drink.value=methodConfig(e.target.value).drink;updatePrepTemplates(e.target.form);applyPrepDefaults(e.target.form)}if((e.target.id=='pd'||e.target.id=='pt')&&e.target.form?.id=='pf')applyPrepDefaults(e.target.form);if(e.target.id=='ft'){ftype=e.target.value;render()}if(e.target.id=='flt'){filt=e.target.value;render()}if(e.target.closest('#rf')&&e.target.name=='type'){const P=RP[e.target.value]||{},E=e.target.form.elements;['milk','water','mt','cup','foam'].forEach(k=>{if(E[k].value===''&&P[k]!=null)E[k].value=P[k]});if(!E.how.value&&P.m)E.how.value=P.m}
  if(e.target.id=='xs'){xk=e.target.value;render()}if(e.target.closest('#sf')){const n=e.target.name;if(n=='machines')tempUI();if(n=='grinders')gridUI();if(n=='gmm'&&e.target.type=='number')gsync('grind');if(n=='beans'){const b=find('beans',e.target.value);if(b&&b.ratio)e.target.form.tratio.value=b.ratio}if(n=='beans'||n=='baskets'||n=='scales')plan()}});
 render();
 </script></body></html>
