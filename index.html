@@ -28,7 +28,7 @@ nav button.on{color:var(--ac);font-weight:600}
 textarea{min-height:90px}
 #version{position:fixed;top:4px;right:7px;z-index:20;padding:2px 6px;border-radius:6px;background:var(--bg);color:var(--mut);font-size:10px;line-height:1.3;opacity:.85;pointer-events:none}
 </style></head><body><main id="app"></main><div id="ov" hidden></div>
-<div id="version">TEST · 2026.11.19 · 01</div><nav id="nav"></nav>
+<div id="version">TEST · 2026.11.19 · 02</div><nav id="nav"></nav>
 <script>
 const K='espresso-v1',EQ=['machines','portafilters','baskets','grinders','scales'];
 const T={
@@ -238,7 +238,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b
  else if(a=='exp'){document.getElementById('io').value=JSON.stringify(db);pend=null;document.getElementById('ic').innerHTML='Stand: '+fd(db.mod)+' · '+cnt(db)+'<br>Dateiname-Vorschlag: baristiq-'+new Date().toISOString().slice(0,10)+'.txt'}
  else if(a=='imp'){const io=document.getElementById('io'),ic=document.getElementById('ic');let d;try{d=JSON.parse(io.value)}catch(x){}
  if(!d||typeof d!='object'||!Array.isArray(d.shots)){ic.textContent='Ungültige Daten: bitte den Export-Text vollständig einfügen.';pend=null;return}
- if(pend&&pend.raw===io.value){db=pend.d;[...EQ,'beans','shots'].forEach(k=>db[k]=db[k]||[]);db.last=db.last||{};try{localStorage.setItem(K,JSON.stringify(db))}catch(x){}pend=null;render();return}
+ if(pend&&pend.raw===io.value){db=pend.d&&typeof pend.d==='object'&&!Array.isArray(pend.d)?pend.d:{};[...EQ,'beans','shots','preps','recipes'].forEach(k=>{if(!Array.isArray(db[k]))db[k]=[]});db.last=db.last&&typeof db.last==='object'?db.last:{};try{localStorage.setItem(K,JSON.stringify(db))}catch(x){}pend=null;render();return}
  pend={raw:io.value,d};const lm=db.mod,im=d.mod,older=im&&lm&&im<lm,empty=!db.shots.length&&!db.beans.length&&!rec().length,ds=db.shots.length-d.shots.length;
  ic.innerHTML=`<b>Datei:</b> ${fd(im)} · ${cnt(d)}<br><b>Hier:</b> ${fd(lm)} · ${cnt(db)}<br>${older?'<b>Achtung: Die Datei ist älter als der Stand hier. Änderungen seit '+fd(im)+' gehen verloren.</b>':empty?'Hier sind noch keine Daten, es geht nichts verloren.':!im||!lm?'Zeitstempel fehlt, der Stand lässt sich nicht vergleichen.':'Die Datei ist neuer oder gleich alt.'}${ds>0?'<br><b>Hier gibt es '+ds+' Shots mehr als in der Datei, sie gehen verloren.</b>':''}<br>Zum Ersetzen noch einmal auf Import drücken.`}});
 document.addEventListener('submit',e=>{e.preventDefault();const f=e.target,d=Object.fromEntries(new FormData(f));
