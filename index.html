@@ -28,7 +28,7 @@ nav button.on{color:var(--ac);font-weight:600}
 textarea{min-height:90px}.filelabel{font-size:16px;color:var(--fg);font-weight:600;margin-top:12px}.filelabel input[type=file]{display:block;font-size:16px;padding:12px;margin-top:6px;min-height:48px;width:100%}.filelabel input[type=file]::file-selector-button{font:inherit;font-size:18px;font-weight:600;padding:9px 14px;margin-right:12px;cursor:pointer}.data-actions [data-a="exp"]{margin-left:18px}
 #version{position:fixed;top:4px;right:7px;z-index:20;padding:2px 6px;border-radius:6px;background:var(--bg);color:var(--mut);font-size:10px;line-height:1.3;opacity:.85;pointer-events:none}
 </style></head><body><main id="app"></main><div id="ov" hidden></div>
-<div id="version">TEST · 2026.11.20 · 02</div><nav id="nav"></nav>
+<div id="version">TEST · 2026.11.20 · 03</div><nav id="nav"></nav>
 <script>
 const K='espresso-v1',EQ=['machines','portafilters','baskets','grinders','scales','brewers'];
 const T={
@@ -61,7 +61,7 @@ function nav(){document.getElementById('nav').innerHTML=[['brew','Zubereiten'],[
 
 function entList(k,showTitle=true,filterType=null){const x=T[k],items=filterType?db[k].filter(o=>o.type===filterType):db[k];return (showTitle?`<h2>${x.t}<button data-a="add" data-k="${k}">+ Neu</button></h2>`:`<h3>${x.t}<button data-a="add" data-k="${k}"${filterType?` data-type="${filterType}"`:''}>+ Neu</button></h3>`)+
  (items.length?items.map(o=>`<div class="c"><b>${esc(lbl(k,o))}</b>${o.note?`<div class="m">${esc(o.note)}</div>`:''}${o.bar?`<div class="m">${nf(o.bar)} bar</div>`:''}${k=='machines'?tinfo(o):''}${k=='beans'&&o.roastDate?`<div class="m">Röstdatum: ${esc(o.roastDate)} · ${Math.max(0,Math.floor((new Date(today())-new Date(o.roastDate))/864e5))} Tage seit Röstung</div>`:''}${k=='brewers'&&o.type?`<div class="m">${esc(o.type)}${o.capacity?' · '+esc(o.capacity)+' ml':''}</div>`:''}${k=='grinders'&&gcal(o)?(c=>`<div class='m'>${c.T} × ${c.S} × ${c.U} = ${c.max} Stufen à ${nf(c.m,3)} mm (0 bis ${nf(c.z+c.max*c.m,3)} mm)</div>`)(gcal(o)):''}${o.roaster?`<div class="m">${esc(o.roaster)}</div>`:''}${o.ratio?`<div class="m">Ziel-Ratio 1 : ${nf(o.ratio,2)}</div>`:''}
- <div class="row"><button data-a="edit" data-k="${k}" data-id="${o.id}">Bearbeiten</button><button data-a="del" data-k="${k}" data-id="${o.id}">${delArm==o.id?'Sicher löschen?':'Löschen'}</button></div></div>`).join(''):`<div class="m">Noch keine ${x.t}.</div>`)}
+ <div class="row"><button data-a="edit" data-k="${k}" data-id="${o.id}">Bearbeiten</button><button data-a="del" data-k="${k}" data-id="${o.id}">${delArm==o.id?'Sicher löschen?':'Löschen'}</button></div></div>`).join('') :`<div class="m">Noch keine Einträge.</div>`)}
 
 function entForm(k,id,presetType=''){const x=T[k],o=id?find(k,id):{};
  document.getElementById('ov').hidden=false;
