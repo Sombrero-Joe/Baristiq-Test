@@ -70,7 +70,7 @@ function entForm(k,id){const x=T[k],o=id?find(k,id):{};
  if(k=='beans'){const f=document.getElementById('ef'),u=()=>{const a=f.ara.value;document.getElementById('rb').textContent=a===''?'Leer lassen = unbekannt. 100 % = reine Arabica.':`Robusta-Anteil: ${nf(100-a,0)} %`};f.ara.oninput=u;u()}}
 
 function shotForm(){const s=edit?find('shots',edit):{...db.last,date:today(),method:'Espresso',rate:7,bal:0};
- const sel=k=>`<label>${T[k].s}<select name="${k}"><option value="">–</option>${db[k].map(o=>`<option value="${o.id}"${o.id==s[k]?' selected':''}>${esc(lbl(k,o))}</option>`).join('')}</select></label>`;
+ const sel=k=>`<label>${T[k].s}<select name="${k}"><option value="">–</option>${db[k].map(o=>`<option value="${o.id}"${o.id==s[k]?' selected':''}>${esc(lbl(k,o))}${k==='beans'&&o.roastDate?' · Röstung '+esc(o.roastDate):''}</option>`).join('')}</select></label>`;
  const n=(nm,l,ex='')=>`<label>${l}<input name="${nm}" type="number" step="any" inputmode="decimal" value="${esc(s[nm])}" ${ex}></label>`;
  const brewerType=(s.method||'').startsWith('AeroPress')?'AeroPress':(s.method||'Handfilter');
  const brewerList=db.brewers.filter(o=>o.type===brewerType||o.type==='Sonstiges');
