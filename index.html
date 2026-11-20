@@ -243,7 +243,7 @@ function brewView(){
  [['dose','Kaffeemenge / Dosis (g)',18],['output','Kaffee-Ausbeute (g/ml)',36],['water','Wassermenge (ml)',0],['milk','Milchmenge (ml)',0],['time','Brühzeit (Sek.)',28],['temp','Temperatur (°C)',93],['mt','Milchtemperatur (°C)',60],['foam','Schaumanteil (%)',0]].map(x=>'<label>'+x[1]+'<input name="'+x[0]+'" type="number" step="any" value="'+x[2]+'"></label>').join('')+'</div>'+
  '<div class="c"><b>Geschmackliche Bewertung</b><div class="m">Wie gefällt mir der Espresso insgesamt? Wie schmeckt er mir persönlich?</div><label>Welche Beschreibung trifft auf meinen Geschmack zu?</label><div class="g">'+['sauer','bitter','dünn','wässrig','zu kräftig','körperreich','süß','ausgewogen','adstringierend','flach','lecker'].map(x=>'<label><input type="checkbox" name="taste" value="'+x+'" style="width:auto"> '+x+'</label>').join('')+'</div>'+
  '<label>Persönliche Gesamtbewertung: <span id="prate">7</span>/10<input name="rate" type="range" min="1" max="10" value="7"></label></div>'+
- sensoryForm()+<label>Notizen<textarea name="note"></textarea></label>'+
+ sensoryForm()+'<label>Notizen<textarea name="note"></textarea></label>'+
  '<div class="row"><button class="p" type="submit">'+(prepEdit?'Änderungen speichern':'Zubereitung speichern')+'</button></div></form></div>';
 }
 
