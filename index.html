@@ -69,14 +69,14 @@ function entForm(k,id){const x=T[k],o=id?find(k,id):{};
  (k=='beans'?'<div class="m" id="rb"></div>':'')+`<div class="row"><button class="p" type="submit">Speichern</button><button type="button" data-a="close">Abbrechen</button></div></form>`;
  if(k=='beans'){const f=document.getElementById('ef'),u=()=>{const a=f.ara.value;document.getElementById('rb').textContent=a===''?'Leer lassen = unbekannt. 100 % = reine Arabica.':`Robusta-Anteil: ${nf(100-a,0)} %`};f.ara.oninput=u;u()}}
 
-function shotForm(){const s=edit?find('shots',edit):{...db.last,date:today(),method:'Espressomaschine',rate:7,bal:0};
+function shotForm(){const s=edit?find('shots',edit):{...db.last,date:today(),method:'Espresso',rate:7,bal:0};
  const sel=k=>`<label>${T[k].s}<select name="${k}"><option value="">–</option>${db[k].map(o=>`<option value="${o.id}"${o.id==s[k]?' selected':''}>${esc(lbl(k,o))}</option>`).join('')}</select></label>`;
  const n=(nm,l,ex='')=>`<label>${l}<input name="${nm}" type="number" step="any" inputmode="decimal" value="${esc(s[nm])}" ${ex}></label>`;
  const brewerType=(s.method||'').startsWith('AeroPress')?'AeroPress':(s.method||'Handfilter');
  const brewerList=db.brewers.filter(o=>o.type===brewerType||o.type==='Sonstiges');
  return `<h1>${edit?'Extraktion bearbeiten':'Neue Extraktion'}</h1><form id="sf" class="c">
  <label>Datum<input name="date" type="date" value="${s.date||today()}"></label>
- <label>Zubereitungsart<select name="method" id="em">${methodOptions(s.method||'Espressomaschine')}</select></label>
+ <label>Zubereitungsart<select name="method" id="em">${methodOptions(s.method||'Espresso')}</select></label>
  ${sel('beans')}<div class="m" id="beanRoastInfo"></div>
  <div id="espressoEquipment" class="g">${sel('machines')}${sel('portafilters')}${sel('baskets')}</div>
  <div id="brewerEquipment" class="g"><label>Zubereitungsgerät<select name="brewers"><option value="">–</option>${brewerList.map(o=>`<option value="${o.id}"${o.id==s.brewers?' selected':''}>${esc(lbl('brewers',o))}</option>`).join('')}</select></label><label id="filterTypeField">Filtertyp<select name="filterType"><option value="">–</option>${['Papier','Metall','Stoff','Ohne Filter','Sonstiger'].map(x=>`<option${s.filterType==x?' selected':''}>${x}</option>`).join('')}</select></label></div>
@@ -88,16 +88,16 @@ function shotForm(){const s=edit?find('shots',edit):{...db.last,date:today(),met
  <label>Balance: <b id="bv"></b><input name="bal" type="range" min="-5" max="5" value="${s.bal??0}"></label>
  <label>Geschmacksnotizen<textarea name="note">${esc(s.note)}</textarea></label>
  <div class="row"><button class="p" type="submit">Speichern</button>${edit?'<button type="button" data-a="tab" data-v="shots">Abbrechen</button>':''}</div></form>`}
-function deviceUI(){const f=document.getElementById('sf');if(!f)return;const method=f.querySelector('[name="method"]').value,espresso=method==='Espressomaschine',ew=document.getElementById('espressoEquipment'),bw=document.getElementById('brewerEquipment'),pw=document.getElementById('pressureField');ew.style.display=espresso?'grid':'none';bw.style.display=espresso?'none':'grid';pw.style.display=espresso?'block':'none';ew.querySelectorAll('select').forEach(x=>x.disabled=!espresso);pw.querySelectorAll('input').forEach(x=>x.disabled=!espresso);const type=method.startsWith('AeroPress')?'AeroPress':method,sel=f.querySelector('[name="brewers"]'),old=sel.value,list=db.brewers.filter(x=>x.type===type||x.type==='Sonstiges');sel.innerHTML='<option value="">–</option>'+list.map(x=>`<option value="${x.id}">${esc(lbl('brewers',x))}</option>`).join('');sel.value=list.some(x=>x.id===old)?old:'';sel.disabled=espresso;const ff=document.getElementById('filterTypeField');ff.style.display=(method==='Handfilter'||method.startsWith('AeroPress'))?'block':'none';ff.querySelector('select').disabled=espresso||ff.style.display==='none';}
+function deviceUI(){const f=document.getElementById('sf');if(!f)return;const method=f.querySelector('[name="method"]').value,espresso=method==='Espresso',ew=document.getElementById('espressoEquipment'),bw=document.getElementById('brewerEquipment'),pw=document.getElementById('pressureField');ew.style.display=espresso?'grid':'none';bw.style.display=espresso?'none':'grid';pw.style.display=espresso?'block':'none';ew.querySelectorAll('select').forEach(x=>x.disabled=!espresso);pw.querySelectorAll('input').forEach(x=>x.disabled=!espresso);const type=method.startsWith('AeroPress')?'AeroPress':method,sel=f.querySelector('[name="brewers"]'),old=sel.value,list=db.brewers.filter(x=>x.type===type||x.type==='Sonstiges');sel.innerHTML='<option value="">–</option>'+list.map(x=>`<option value="${x.id}">${esc(lbl('brewers',x))}</option>`).join('');sel.value=list.some(x=>x.id===old)?old:'';sel.disabled=espresso;const ff=document.getElementById('filterTypeField');ff.style.display=(method==='Handfilter'||method.startsWith('AeroPress'))?'block':'none';ff.querySelector('select').disabled=espresso||ff.style.display==='none';}
 function calc(){const f=document.getElementById('sf');if(!f)return;const g=n=>parseFloat(f.querySelector('[name="'+n+'"]').value),d=g('dose'),y=g('yield'),t=g('time'),bean=find('beans',f.querySelector('[name="beans"]').value),rd=bean?.roastDate||'',days=rd?Math.round((new Date(f.querySelector('[name="date"]').value)-new Date(rd))/864e5):null;document.getElementById('beanRoastInfo').textContent=rd?`Röstdatum: ${rd} · ${days>=0?days+' Tage seit Röstung':'Röstdatum liegt in der Zukunft'}`:'Für diese Bohne ist noch kein Röstdatum hinterlegt.';document.getElementById('calc').innerHTML=`<div class='g'><div><div class='m'>Ratio</div><div class='k'>${d>0&&y>0?'1 : '+nf(y/d,2):'–'}</div></div><div><div class='m'>Durchfluss</div><div class='k'>${y>0&&t>0?nf(y/t,2)+' g/s':'–'}</div></div></div><div class='m'>${days!=null&&!isNaN(days)?'Tage nach Röstung: '+days:'Röstdatum wird aus der Bohnenverwaltung übernommen.'}</div>`;document.getElementById('rv').textContent=f.querySelector('[name="rate"]').value;const b=+f.querySelector('[name="bal"]').value;document.getElementById('bv').textContent=b==0?'ausgewogen':b<0?`sauer ${-b}`:`bitter ${b}`}
 function shotCard(s){const d=+s.dose,y=+s.yield,t=+s.time,bean=find('beans',s.beans),rd=s.roastDate||bean?.roastDate;const eq=EQ.map(k=>s[k]?lbl(k,find(k,s[k])||{name:s.snap?.[k]}):'').filter(Boolean).join(' · ');
- const b=+s.bal;return `<div class="c"><div class="m">${esc(s.date)} · ${esc(s.method||'Espressomaschine')}</div><b>${esc(s.beans?lbl('beans',bean||{name:s.snap?.beans}):'Ohne Bohne')}</b> <span class="k" style="float:right">${s.rate}/10</span>
+ const b=+s.bal;return `<div class="c"><div class="m">${esc(s.date)} · ${esc(s.method||'Espresso')}</div><b>${esc(s.beans?lbl('beans',bean||{name:s.snap?.beans}):'Ohne Bohne')}</b> <span class="k" style="float:right">${s.rate}/10</span>
  <div>${d?nf(d)+' g':'?'} → ${y?nf(y)+' g':'?'}${t?' in '+nf(t,0)+' s':''}${d>0&&y>0?' · 1:'+nf(y/d,2):''}${y>0&&t>0?' · '+nf(y/t,2)+' g/s':''}</div>
  <div class="m">${s.grind?'Mahlgrad '+esc(s.grind)+(s.gmm?' ('+nf(s.gmm,3)+' mm)':'')+' · ':''}${s.temp?nf(s.temp)+' °C · ':''}${s.bar?nf(s.bar)+' bar · ':''}${b==0?'ausgewogen':b<0?'sauer '+(-b):'bitter '+b}</div>
  ${rd?`<div class="m">Röstdatum: ${esc(rd)}</div>`:''}${s.filterType?`<div class="m">Filter: ${esc(s.filterType)}</div>`:''}${eq?`<div class="m">${esc(eq)}</div>`:''}${s.note?`<div>${esc(s.note)}</div>`:''}
  <div class="row"><button data-a="sedit" data-id="${s.id}">Bearbeiten</button><button data-a="sdel" data-id="${s.id}">${delArm==s.id?'Sicher löschen?':'Löschen'}</button></div></div>`}
 
-function tempUI(){const f=document.getElementById('sf'),w=document.getElementById('tw');if(!f||!w)return;const method=f.querySelector('[name="method"]').value,m=find('machines',f.querySelector('[name="machines"]').value)||{},c=f.temp?f.temp.value:w.dataset.v,L=tl(m);if(method!=='Espressomaschine'){w.innerHTML=`<label>Temperatur (°C)<input name="temp" type="number" step="any" inputmode="decimal" value="${esc(c)}"></label>`;return}
+function tempUI(){const f=document.getElementById('sf'),w=document.getElementById('tw');if(!f||!w)return;const method=f.querySelector('[name="method"]').value,m=find('machines',f.querySelector('[name="machines"]').value)||{},c=f.temp?f.temp.value:w.dataset.v,L=tl(m);if(method!=='Espresso'){w.innerHTML=`<label>Temperatur (°C)<input name="temp" type="number" step="any" inputmode="decimal" value="${esc(c)}"></label>`;return}
  if(L.length){if(c!==''&&!L.includes(+c))L.push(+c);L.sort((a,b)=>a-b);w.innerHTML=`<label>Temperatur (°C)<select name="temp"><option value="">–</option>${L.map(x=>`<option${x==c?' selected':''}>${x}</option>`).join('')}</select></label>`}
  else if(hasR(m)){const st=m.tstep||1,mid=c!==''?c:m.tmin;w.innerHTML=`<label>Temperatur (°C)<input name="temp" type="number" inputmode="decimal" min="${m.tmin}" max="${m.tmax}" step="${st}" value="${esc(c)}"></label><input id="tr" type="range" min="${m.tmin}" max="${m.tmax}" step="${st}" value="${mid}">`}
  else w.innerHTML=`<label>Temperatur (°C)<input name="temp" type="number" step="any" inputmode="decimal" value="${esc(c)}"></label>`}
@@ -118,7 +118,7 @@ function ana(){const fx=XP[xk][1],P=db.shots.filter(s=>!filt||s.beans==filt).map
  h+=`<div class='c'><b>n = ${n}</b>${isFinite(r)?` · r = ${nf(r,2)} · Steigung ${sl>=0?'+':''}${nf(sl,2)} Punkte je Einheit`:' · keine Streuung in X oder Y, keine Korrelation berechenbar'}<div class='m'>${n<10?'Bei n < 10 ist die Aussagekraft gering. ':''}Korrelation zeigt einen Zusammenhang, keine Ursache; andere Parameter laufen oft mit.</div></div>`;
  if(x1>x0){const bw=(x1-x0)/5,rows=[];for(let i=0;i<5;i++){const a=x0+i*bw,b=a+bw,q=P.filter(p=>p.x>=a&&(p.x<b||i==4));if(q.length)rows.push(`<div>${nf(a,2)} bis ${nf(b,2)}: Ø ${nf(q.reduce((s,p)=>s+p.y,0)/q.length,1)} (n = ${q.length})</div>`)}h+=`<div class='c'><b>Ø Bewertung je Bereich</b>${rows.join('')}</div>`}
  return h}
-function plan(){const f=document.getElementById('sf'),el=document.getElementById('pr');if(!f||!el)return;const r=nn(f.tratio.value),o=nn(f.tout.value),nd=f.querySelector('[name="method"]').value==='Espressomaschine'?nn((find('baskets',f.baskets.value)||{}).dose):NaN,rs=nn((find('scales',f.scales.value)||{}).res)||0.1;let h='';
+function plan(){const f=document.getElementById('sf'),el=document.getElementById('pr');if(!f||!el)return;const r=nn(f.tratio.value),o=nn(f.tout.value),nd=f.querySelector('[name="method"]').value==='Espresso'?nn((find('baskets',f.baskets.value)||{}).dose):NaN,rs=nn((find('scales',f.scales.value)||{}).res)||0.1;let h='';
  if(r>0&&o>0){const d=o/r,dr=+(Math.round(d/rs)*rs).toFixed(3);h+=`<div class='k'>Dosis: ${nf(dr,2)} g</div><div class='m'>exakt ${nf(d,2)} g, gerundet auf ${nf(rs,2)} g (Waagenauflösung)</div>`;
   if(nd>0){const dv=dr-nd,p=dv/nd*100;h+=`<div class='m'>Sieb-Nennfüllmenge ${nf(nd)} g: Abweichung ${dv>=0?'+':''}${nf(dv,1)} g (${p>=0?'+':''}${nf(p,0)} %)${Math.abs(p)>10?' – außerhalb ±10 %, Sieb passt eher nicht':''}</div>`}
   h+=`<div class='row'><button type='button' data-a='pdose' data-v='${dr}'>Dosis übernehmen</button></div>`}
@@ -137,21 +137,21 @@ function gsync(src){const f=document.getElementById('sf'),c=gcal(find('grinders'
  else{const m=parseFloat(f.gmm.value);if(isFinite(m)){const i=Math.max(0,Math.round((m-c.z)/c.m));f.grind.value=gfmt(c,i)}}gInfo()}
 
 const METHODS={
- 'Espressomaschine':{drink:'Espresso',dose:18,output:36,time:28,temp:93,water:0,milk:0,mt:60,foam:0,how:'Siebträger gleichmäßig verteilen und tampen. Bezug nach Zielmenge und Geschmack stoppen.'},
+ 'Espresso':{drink:'Espresso',dose:18,output:36,time:28,temp:93,water:0,milk:0,mt:60,foam:0,how:'Siebträger gleichmäßig verteilen und tampen. Bezug nach Zielmenge und Geschmack stoppen.'},
  'Handfilter':{drink:'Filterkaffee',dose:15,output:250,time:180,temp:94,water:250,milk:0,mt:0,foam:0,how:'Filter ausspülen, Kaffee einfüllen und in mehreren Aufgüssen gleichmäßig aufgießen.'},
  'French Press':{drink:'French Press',dose:15,output:250,time:240,temp:94,water:250,milk:0,mt:0,foam:0,how:'Grob mahlen, aufgießen, umrühren, ziehen lassen und den Stempel langsam herunterdrücken.'},
  'AeroPress':{drink:'AeroPress',dose:15,output:200,time:90,temp:90,water:200,milk:0,mt:0,foam:0,how:'Kaffee und Wasser vermischen, ziehen lassen und gleichmäßig pressen.'},
  'Mokkakanne':{drink:'Mokka',dose:18,output:90,time:240,temp:0,water:90,milk:0,mt:0,foam:0,how:'Unterteil bis knapp unter das Ventil füllen, Sieb locker füllen und bei moderater Hitze brühen.'}
 };
-const METHOD_GROUPS={'Percolation – Durchlaufverfahren':['Espressomaschine','Handfilter','Mokkakanne','AeroPress (Percolation)'],'Immersion – Tauchverfahren':['French Press','AeroPress (Immersion)']};
-const methodConfig=k=>METHODS[k]||METHODS[(k||'').replace(' (Percolation)','').replace(' (Immersion)','')]||METHODS.Espressomaschine;
-const methodOptions=selected=>Object.entries(METHOD_GROUPS).map(([g,ks])=>`<optgroup label="${g}">${ks.map(k=>`<option value="${k}"${(selected||'Espressomaschine')==k?' selected':''}>${k}</option>`).join('')}</optgroup>`).join('');
+const METHOD_GROUPS={'Percolation – Durchlaufverfahren':['Espresso','Handfilter','Mokkakanne','AeroPress (Percolation)'],'Immersion – Tauchverfahren':['French Press','AeroPress (Immersion)']};
+const methodConfig=k=>METHODS[k]||METHODS[(k||'').replace(' (Percolation)','').replace(' (Immersion)','')]||METHODS.Espresso;
+const methodOptions=selected=>Object.entries(METHOD_GROUPS).map(([g,ks])=>`<optgroup label="${g}">${ks.map(k=>`<option value="${k}"${(selected||'Espresso')==k?' selected':''}>${k}</option>`).join('')}</optgroup>`).join('');
 const DRINKS=['Espresso','Ristretto','Lungo','Americano','Macchiato','Cortado','Flat White','Cappuccino','Café Latte','Latte Macchiato','Mocha','Affogato','Filterkaffee','French Press','AeroPress','Mokka','Eigene'];
 function canonicalMethod(value){
  const key=String(value??'').trim().toLocaleLowerCase('de-DE').normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').replace(/\\s+/g,' ');
  const aliases={
-  'espressomaschine':'Espressomaschine','espresso':'Espressomaschine','siebtrager':'Espressomaschine',
-  'siebtragermaschine':'Espressomaschine','espresso machine':'Espressomaschine','portafilter':'Espressomaschine',
+  'espressomaschine':'Espresso','espresso':'Espresso','siebtrager':'Espresso',
+  'siebtragermaschine':'Espresso','espresso machine':'Espresso','portafilter':'Espresso',
   'handfilter':'Handfilter','pour over':'Handfilter','pour-over':'Handfilter',
   'mokkakanne':'Mokkakanne','moka pot':'Mokkakanne',
   'french press':'French Press','frenchpress':'French Press',
@@ -160,6 +160,7 @@ function canonicalMethod(value){
  };
  return aliases[key]||value;
 }
+let methodsMigrated=false;[...db.preps,...db.recipes,...db.shots].forEach(o=>{if(o.method){const m=canonicalMethod(o.method);if(m!==o.method){o.method=m;methodsMigrated=true}}});if(db.last?.method){const m=canonicalMethod(db.last.method);if(m!==db.last.method){db.last.method=m;methodsMigrated=true}}if(methodsMigrated)save();
 function updatePrepTemplates(f){
  const drink=f.querySelector('#pd').value,sel=f.querySelector('#pt'),old=sel.value;
  const matches=rec().filter(r=>String(r.type||'').trim()===drink);
@@ -177,7 +178,7 @@ function applyPrepDefaults(f){
  const help=f.querySelector('#phelp');if(help)help.textContent=recipe?'Rezept „'+recipe.name+'“ geladen. Werte können für diese Zubereitung angepasst werden. '+(recipe.how||x.how):x.how;
 }
 function prepSuggestion(){
- const h=db.preps.filter(p=>p.method==='Espressomaschine'&&p.drink==='Espresso');
+ const h=db.preps.filter(p=>p.method==='Espresso'&&p.drink==='Espresso');
  if(h.length<3)return 'Nach mindestens drei gespeicherten Espresso-Zubereitungen kann Baristiq vorsichtige Hinweise aus deinem Verlauf ableiten.';
  const q=h.slice(-6),s=q.filter(p=>(p.taste||[]).includes('sauer')).length,b=q.filter(p=>(p.taste||[]).includes('bitter')).length;
  if(s>=2)return 'Mehrfach als sauer bewertet: Teste beim nächsten Bezug nur eine etwas höhere Ausbeute (etwa 5 %). Behalte den Mahlgrad zunächst bei.';
@@ -195,7 +196,7 @@ function brewView(){
  return '<h1>'+(prepEdit?'Zubereitung bearbeiten':'Neue Zubereitung')+'</h1><div class="row"><button data-a="preplist">Zurück zur Übersicht</button></div><div class="c"><form id="pf">'+
  ''+
  '<label>Zubereitungsart<select name="method" id="pm">'+methodOptions()+'</select></label>'+
- '<label>Getränkeart<select name="drink" id="pd">'+dr.map(x=>'<option'+(x===methodConfig('Espressomaschine').drink?' selected':'')+'>'+x+'</option>').join('')+'</select></label>'+
+ '<label>Getränkeart<select name="drink" id="pd">'+dr.map(x=>'<option'+(x===methodConfig('Espresso').drink?' selected':'')+'>'+x+'</option>').join('')+'</select></label>'+
  '<label>Rezept<select name="template" id="pt"><option value="standard">Kein Rezept – Standardkonfiguration</option></select></label>'+
  '<div class="m" id="phelp">Standardwerte sind ein anpassbarer Ausgangspunkt.</div><div class="g">'+
  [['dose','Kaffeemenge / Dosis (g)',18],['output','Kaffee-Ausbeute (g/ml)',36],['water','Wassermenge (ml)',0],['milk','Milchmenge (ml)',0],['time','Brühzeit (Sek.)',28],['temp','Temperatur (°C)',93],['mt','Milchtemperatur (°C)',60],['foam','Schaumanteil (%)',0]].map(x=>'<label>'+x[1]+'<input name="'+x[0]+'" type="number" step="any" value="'+x[2]+'"></label>').join('')+'</div>'+
@@ -235,7 +236,7 @@ async function copyTxt(){const ic=document.getElementById('ic'),txt=JSON.stringi
 const fd=t=>t?new Date(t).toLocaleString('de-DE',{dateStyle:'short',timeStyle:'short'}):'unbekannt';
 const cnt=d=>`${(d.shots||[]).length} Extraktionen, ${(d.beans||[]).length} Bohnen, ${(d.recipes||[]).length} Rezepte`;
 function render(){nav();const a=document.getElementById('app');
- if(v=='brew'){a.innerHTML=brewView();const pf=document.getElementById('pf');if(pf){updatePrepTemplates(pf);if(prepEdit){const p=db.preps.find(x=>x.id===prepEdit);if(p){pf.querySelector('#pm').value=p.method||'Espressomaschine';pf.querySelector('#pd').value=p.drink||'Espresso';updatePrepTemplates(pf);pf.querySelector('#pt').value=p.recipeId||'standard';['dose','output','water','milk','time','temp','mt','foam','note','rate'].forEach(k=>{if(pf.elements[k])pf.elements[k].value=p[k]??''});pf.querySelectorAll('input[name=taste]').forEach(x=>x.checked=(p.taste||[]).includes(x.value));pf.querySelector('#prate').textContent=p.rate??7}else{prepEdit=null;applyPrepDefaults(pf)}}else applyPrepDefaults(pf)}}
+ if(v=='brew'){a.innerHTML=brewView();const pf=document.getElementById('pf');if(pf){updatePrepTemplates(pf);if(prepEdit){const p=db.preps.find(x=>x.id===prepEdit);if(p){pf.querySelector('#pm').value=canonicalMethod(p.method||'Espresso');pf.querySelector('#pd').value=p.drink||'Espresso';updatePrepTemplates(pf);pf.querySelector('#pt').value=p.recipeId||'standard';['dose','output','water','milk','time','temp','mt','foam','note','rate'].forEach(k=>{if(pf.elements[k])pf.elements[k].value=p[k]??''});pf.querySelectorAll('input[name=taste]').forEach(x=>x.checked=(p.taste||[]).includes(x.value));pf.querySelector('#prate').textContent=p.rate??7}else{prepEdit=null;applyPrepDefaults(pf)}}else applyPrepDefaults(pf)}}
  else if(v=='shots'){const l=db.shots.slice().sort((x,y)=>(y.date+y.id).localeCompare(x.date+x.id));
   a.innerHTML=`<h1>Extraktionen</h1><div class="row"><button class="p" data-a="tab" data-v="new">+ Neue Extraktion</button></div>`+(l.length?l.map(shotCard).join(''):'<div class="c m">Noch keine Extraktionen. Lege unter „Equipment“ und „Bohnen“ deine Ausstattung an und trage dann eine Extraktion ein.</div>')}
  else if(v=='new'){a.innerHTML=shotForm();deviceUI();tempUI();gridUI();calc();{const f=document.getElementById('sf'),b=find('beans',f.querySelector('[name="beans"]').value);if(!f.tratio.value&&b&&b.ratio)f.tratio.value=b.ratio;plan()}}
