@@ -28,7 +28,7 @@ nav button.on{color:var(--ac);font-weight:600}nav button[data-v="brew"]{margin-l
 textarea{min-height:90px}.filelabel{font-size:16px;color:var(--fg);font-weight:600;margin-top:12px}.filelabel input[type=file]{display:block;font-size:16px;padding:12px;margin-top:6px;min-height:48px;width:100%}.filelabel input[type=file]::file-selector-button{font:inherit;font-size:18px;font-weight:600;padding:9px 14px;margin-right:12px;cursor:pointer}.data-actions [data-a="exp"]{margin-left:18px}
 #version{position:fixed;top:4px;right:7px;z-index:20;padding:2px 6px;border-radius:6px;background:var(--bg);color:var(--mut);font-size:10px;line-height:1.3;opacity:.85;pointer-events:none}
 </style></head><body><main id="app"></main><div id="ov" hidden></div>
-<div id="version">TEST · 2026.11.20 · 31</div><nav id="nav"></nav>
+<div id="version">TEST · 2026.11.20 · 32</div><nav id="nav"></nav>
 <script>
 const K='espresso-v1',EQ=['machines','portafilters','baskets','grinders','scales','brewers'];
 const T={
@@ -211,19 +211,20 @@ function prepSuggestion(){
 }
 function sensoryForm(){
  const scale=(name,label)=>'<label>'+label+'<select name="'+name+'"><option value="">–</option>'+['sehr gering','gering','mittel','stark','sehr stark'].map((v,i)=>'<option value="'+(i+1)+'">'+v+'</option>').join('')+'</select></label>';
+ const duration=()=>'<label>Dauer des Nachgeschmacks<select name="aftertaste"><option value="">–</option>'+['gering','eher gering','mittel','anhaltend','lang anhaltend'].map((v,i)=>'<option value="'+(i+1)+'">'+v+'</option>').join('')+'</select></label>';
  const checks=(name,label,values)=>'<div><b>'+label+'</b><div class="g">'+values.map(v=>'<label><input type="checkbox" name="'+name+'" value="'+v+'" style="width:auto"> '+v+'</label>').join('')+'</div></div>';
- const select=(name,label,values)=>'<label>'+label+'<select name="'+name+'"><option value="">–</option>'+values.map((v,i)=>'<option value="'+(i+1)+'">'+v+'</option>').join('')+'</select></label>';
+ const select=(name,label,values)=>'<label>'+label+'<select name="'+name+'"><option value="">–</option>'+values.map(v=>'<option value="'+v+'">'+v+'</option>').join('')+'</select></label>';
+ const balance='<label>Balance und Zusammenspiel<select name="balance"><option value="">–</option>'+['sehr unausgewogen','eher unausgewogen','ausgewogen','gut ausgewogen','sehr harmonisch'].map((v,i)=>'<option value="'+(i+1)+'">'+v+'</option>').join('')+'</select></label>';
  return '<div class="c"><b>Sensorische Beschreibung</b><div class="m">Was nehme ich mit Geruch, Geschmack und Mundgefühl wahr? Diese Angaben beschreiben die konkrete Zubereitung.</div>'+
  '<div class="g">'+scale('fragrance','Duft des gemahlenen Kaffees (vor der Extraktion)')+scale('aroma','Aroma des gebrühten Kaffees (nach der Zubereitung)')+scale('flavor','Geschmacksintensität')+scale('aftertasteIntensity','Intensität des Nachgeschmacks')+'</div>'+
  checks('aromaDescriptors','Duft- und Aromanoten',['blumig','fruchtig','beerig','Trockenfrüchte','Zitrus','nussig','Kakao / Schokolade','würzig','Karamell / brauner Zucker','röstig','getreidig','grün / pflanzlich','fermentiert','holzig','erdig'])+
  checks('flavorDescriptors','Geschmacksnoten',['blumig','fruchtig','beerig','Trockenfrüchte','Zitrus','nussig','Kakao / Schokolade','würzig','Karamell / brauner Zucker','röstig','getreidig','grün / pflanzlich','fermentiert','holzig','erdig'])+
- '<div class="g">'+scale('sweetness','Süße')+scale('acidity','Säure')+scale('bitterness','Bitterkeit')+scale('body','Körper / Fülle')+scale('aftertaste','Dauer des Nachgeschmacks')+'</div>'+
+ '<div class="g">'+scale('sweetness','Süße')+scale('acidity','Säure')+scale('bitterness','Bitterkeit')+scale('body','Körper / Fülle')+duration()+'</div>'+
  select('acidityType','Säurecharakter',['mild','frisch','fruchtig','spritzig','spitz','adstringierend'])+
  checks('mainTastes','Grundgeschmäcker',['süß','sauer','bitter','salzig','umami'])+
  checks('mouthfeelDescriptors','Mundgefühl',['weich / seidig','samtig','sirupartig','rau','körnig','ölig','metallisch','austrocknend'])+
  checks('aftertasteFeel','Mundgefühl im Nachgeschmack',['trocken','pelzig','astringierend'])+
- select('balance','Balance und Zusammenspiel',['sehr unausgewogen','eher unausgewogen','ausgewogen','gut ausgewogen','sehr harmonisch'])+
- '</div>';
+ balance+'</div>';
 }
 function prepSummary(p){
  const selected=p.taste||[],personal=selected.includes('lecker')&&selected.includes('ausgewogen')?'lecker und ausgewogen':selected.join(', ');
