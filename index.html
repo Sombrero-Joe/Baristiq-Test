@@ -160,7 +160,7 @@ function canonicalMethod(value){
  };
  return aliases[key]||value;
 }
-let methodsMigrated=false;[...db.preps,...db.recipes,...db.shots].forEach(o=>{if(o.method){const m=canonicalMethod(o.method);if(m!==o.method){o.method=m;methodsMigrated=true}}});if(db.last?.method){const m=canonicalMethod(db.last.method);if(m!==db.last.method){db.last.method=m;methodsMigrated=true}}if(methodsMigrated)save();
+let methodsMigrated=false,beansMigrated=false;[...db.preps,...db.recipes,...db.shots].forEach(o=>{if(o.method){const m=canonicalMethod(o.method);if(m!==o.method){o.method=m;methodsMigrated=true}}});if(db.last?.method){const m=canonicalMethod(db.last.method);if(m!==db.last.method){db.last.method=m;methodsMigrated=true}}db.beans.forEach(bean=>{if(!bean.roastDate){const dates=[...new Set(db.shots.filter(x=>x.beans===bean.id&&x.roastDate).map(x=>x.roastDate))];if(dates.length===1){bean.roastDate=dates[0];beansMigrated=true}}});if(methodsMigrated||beansMigrated)save();
 function updatePrepTemplates(f){
  const drink=f.querySelector('#pd').value,sel=f.querySelector('#pt'),old=sel.value;
  const matches=rec().filter(r=>String(r.type||'').trim()===drink);
