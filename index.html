@@ -221,7 +221,7 @@ function sensoryForm(){
  checks('flavorDescriptors','Geschmacksnoten',['blumig','fruchtig','beerig','Trockenfrüchte','Zitrus','nussig','Kakao / Schokolade','würzig','Karamell / brauner Zucker','röstig','getreidig','grün / pflanzlich','fermentiert','holzig','erdig'])+
  '<div class="g">'+scale('sweetness','Süße')+scale('acidity','Säure')+scale('bitterness','Bitterkeit')+scale('body','Körper / Fülle')+duration()+'</div>'+
  select('acidityType','Säurecharakter',['mild','frisch','fruchtig','spritzig','spitz','adstringierend'])+
- checks('mainTastes','Grundgeschmäcker',['süß','sauer','bitter','salzig','umami'])+
+ checks('mainTastes','Grundgeschmack',['süß','sauer','bitter','salzig','umami'])+
  checks('mouthfeelDescriptors','Mundgefühl',['weich / seidig','samtig','sirupartig','rau','körnig','ölig','metallisch','austrocknend'])+
  checks('aftertasteFeel','Mundgefühl im Nachgeschmack',['trocken','pelzig','astringierend'])+
  balance+'</div>';
@@ -233,7 +233,7 @@ function prepSummary(p){
  const duration=['','gering','eher gering','mittel','anhaltend','lang anhaltend'];
  const sensory=labels.filter(([k])=>p[k]).map(([k,l])=>l+' '+((k==='aftertaste'?duration:intensity)[+p[k]]||p[k]));
  const parts=(k,l)=>Array.isArray(p[k])&&p[k].length?l+' '+p[k].join(', '):'';
- [['aromaDescriptors','Duft-/Aromanoten'],['flavorDescriptors','Geschmacksnoten'],['mainTastes','Grundgeschmäcker'],['mouthfeelDescriptors','Mundgefühl']].forEach(([k,l])=>{const v=parts(k,l);if(v)sensory.push(v)});
+ [['aromaDescriptors','Duft-/Aromanoten'],['flavorDescriptors','Geschmacksnoten'],['mainTastes','Grundgeschmack'],['mouthfeelDescriptors','Mundgefühl']].forEach(([k,l])=>{const v=parts(k,l);if(v)sensory.push(v)});
  if(p.acidityType)sensory.push('Säurecharakter '+p.acidityType);
  if(p.balance)sensory.push('Balance '+(['','sehr unausgewogen','eher unausgewogen','ausgewogen','gut ausgewogen','sehr harmonisch'][+p.balance]||p.balance));
  const after=parts('aftertasteFeel','Mundgefühl nach dem Schlucken');if(after)sensory.push(after);
