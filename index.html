@@ -42,14 +42,14 @@ brewers:{t:'Zubereitungsgeräte',s:'Zubereitungsgerät',f:[['type','Geräteart',
 beans:{t:'Bohnen',s:'Bohne',f:[['name','Name/Sorte','text'],['roaster','Röster','text'],['ara','Arabica-Anteil (%)','number'],['rob','Robusta-Anteil (%)','number'],['roast','Röstgrad','select',['Hell','Mittel','Dunkel']],['country','Ursprungsland','text'],['region','Region / Anbaugebiet','text'],['farm','Farm / Produzent (optional)','text'],['variety','Varietät','text'],['processing','Aufbereitung / Processing','text'],['roastDate','Röstdatum','date'],['openingDate','Öffnungsdatum','date'],['ratio','Ziel-Ratio (1 : x), z. B. 2','number'],['storageType','Lagerungsart','select',['Originalverpackung mit Ventil','Luftdichter Behälter','Vakuumbehälter','Aromadose','Gefrierlagerung','Sonstige Lagerung']],['storageNotes','Lagerungshinweise','text'],['note','Notiz','text']]},
 waters:{t:'Wasser',s:'Wasserprofil',f:[['name','Name des Wasserprofils','text'],['origin','Wasserquelle','text'],['treatment','Marke / Aufbereitung','text'],['gh','Gesamthärte (°dH)','number'],['kh','Karbonathärte (°dH)','number'],['ph','pH-Wert','number'],['tds','Leitfähigkeit / TDS (ppm)','number'],['note','Notiz','text']]}
 };
-function ensureCoffeeDefaults(){if(!Array.isArray(db.coffeeSystems))db.coffeeSystems=[];if(!db.coffeeSystems.length)db.coffeeSystems=[
+function ensureCoffeeDefaults(){if(!Array.isArray(db.coffeeSystems))db.coffeeSystems=[];const defaults=[
  {id:'sys-nespresso-original',name:'Nespresso Original'},
  {id:'sys-nespresso-vertuo',name:'Nespresso Vertuo'},
  {id:'sys-dolce-gusto',name:'Dolce Gusto'},
  {id:'sys-tassimo',name:'Tassimo'},
  {id:'sys-ese',name:'ESE (44 mm)'},
  {id:'sys-senseo',name:'Senseo / Softpad'}
-];}
+];defaults.forEach(system=>{if(!db.coffeeSystems.some(existing=>existing.id===system.id))db.coffeeSystems.push(system)});}
 let db={};try{db=JSON.parse(localStorage.getItem(K))||{}}catch(e){}
 [...EQ,'beans','waters','shots','preps','recipes','coffeeSystems','coffeeProducts','coffeeMachines','blends','blendVersions','components','drinkProfiles','customUnits'].forEach(k=>{if(!Array.isArray(db[k]))db[k]=[]});db.schemaVersion=Math.max(2,Number(db.schemaVersion)||1);ensureCoffeeDefaults();db.last=db.last&&typeof db.last==='object'?db.last:{};
 const save=()=>{db.mod=Date.now();try{localStorage.setItem(K,JSON.stringify(db))}catch(e){}};
