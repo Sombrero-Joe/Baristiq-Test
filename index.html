@@ -222,7 +222,7 @@ function applyPrepDefaults(f){
  const vals={dose:shot?.dose??x.dose,output:shot?.yield??x.output,time:shot?.time??x.time,temp:shot?.temp??x.temp,water:recipe?.water??p.water??x.water,milk:recipe?.milk??p.milk??x.milk,mt:recipe?.mt??p.mt??x.mt,foam:recipe?.foam??p.foam??x.foam};
  Object.entries(vals).forEach(([k,v])=>{const el=f.querySelector('[name="'+k+'"]');if(el)el.value=v??0});
  const help=f.querySelector('#phelp');if(help)help.textContent=recipe?'Rezept „'+recipe.name+'“ geladen. Werte können für diese Zubereitung angepasst werden. '+(recipe.how||x.how):x.how;
- const profile=!recipe?db.drinkProfiles.find(x=>x.drink===drink):null;if(profile){loadPrepComponents(f,profile.components||[]);f.querySelectorAll('[data-legacy-component]').forEach(label=>{label.hidden=true;const input=label.querySelector('input');if(input)input.value=0});}else if(!recipe){loadPrepComponents(f,[]);f.querySelectorAll('[data-legacy-component]').forEach(label=>label.hidden=true);}
+ const profile=!recipe?db.drinkProfiles.find(x=>x.drink===drink):null;if(recipe){loadPrepComponents(f,[]);f.querySelectorAll('[data-legacy-component]').forEach(label=>label.hidden=false);}else if(profile){loadPrepComponents(f,profile.components||[]);f.querySelectorAll('[data-legacy-component]').forEach(label=>{label.hidden=true;const input=label.querySelector('input');if(input)input.value=0});}else{loadPrepComponents(f,[]);f.querySelectorAll('[data-legacy-component]').forEach(label=>label.hidden=true);}
  syncPrepBean(f);syncPrepWater(f);
 }
 function prepSuggestion(){
