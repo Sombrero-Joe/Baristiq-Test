@@ -269,9 +269,10 @@ function componentRowHtml(c={}){
  const units=[...new Set(['ml','g','Stück',...(db.customUnits||[])])];
  return '<div class="c component-row" data-component-row draggable="true"><input type="hidden" data-component-product-id value="'+esc(c.coffeeProductId||'')+'"><div class="g"><label>Komponente<input data-component-name value="'+esc(c.name||'')+'" placeholder="z. B. Milch"></label><label>Menge<input data-component-quantity type="number" min="0" step="any" value="'+esc(c.quantity??'')+'"></label></div><div class="g"><label>Einheit<select data-component-unit>'+units.map(u=>'<option'+(u===(c.unit||'ml')?' selected':'')+'>'+esc(u)+'</option>').join('')+'</select></label><label>Temperatur (°C, optional)<input data-component-temperature type="number" step="any" value="'+esc(c.temperature??'')+'"></label></div><div class="row"><button type="button" data-a="move-component-up">↑</button><button type="button" data-a="move-component-down">↓</button><button type="button" data-a="remove-component">Komponente entfernen</button></div></div>';
 }
-function addComponentRow(form,name=''){
+function addComponentRow(form,component=''){
  const rows=form.querySelector('#componentRows');if(!rows)return;
- rows.insertAdjacentHTML('beforeend',componentRowHtml({name,unit:'ml'}));
+ const item=typeof component==='string'?{name:component,unit:'ml'}:component;
+ rows.insertAdjacentHTML('beforeend',componentRowHtml(item));
  form.querySelector('#componentPanel').hidden=false;
 }
 function loadPrepComponents(form,items=[]){
