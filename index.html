@@ -362,7 +362,6 @@ const RP={
 const rec=()=>db.recipes||(db.recipes=[]);
 
 function ensureDrinkProfiles(){
- if(db.drinkProfiles.length)return;
  const profiles={
   'Americano':[{name:'Heißwasser',quantity:120,unit:'ml',tempMin:85,tempMax:95,order:2}],
   'Cappuccino':[{name:'Milch',quantity:90,unit:'ml',tempMin:60,tempMax:65,order:2},{name:'Milchschaum',quantity:60,unit:'ml',tempMin:60,tempMax:65,order:3}],
@@ -373,7 +372,7 @@ function ensureDrinkProfiles(){
   'Macchiato':[{name:'Milchschaum',quantity:15,unit:'ml',tempMin:60,tempMax:65,order:2}],
   'Mocha':[{name:'Schokoladensirup',quantity:15,unit:'ml',order:1},{name:'Milch',quantity:150,unit:'ml',tempMin:60,tempMax:65,order:3},{name:'Milchschaum',quantity:15,unit:'ml',tempMin:60,tempMax:65,order:4}]
  };
- db.drinkProfiles=Object.entries(profiles).map(([drink,components])=>({id:'drink-'+drink.toLowerCase().replace(/[^a-z0-9]+/g,'-'),drink,components,description:'Übliche Ausgangsvorgabe; individuell anpassbar.'}));
+ Object.entries(profiles).forEach(([drink,components])=>{if(!db.drinkProfiles.some(x=>x.drink===drink))db.drinkProfiles.push({id:'drink-'+drink.toLowerCase().replace(/[^a-z0-9]+/g,'-'),drink,components,description:'Übliche Ausgangsvorgabe; individuell anpassbar.'})});
 }
 
 ensureDrinkProfiles();
