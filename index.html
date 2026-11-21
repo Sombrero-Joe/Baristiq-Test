@@ -42,8 +42,16 @@ brewers:{t:'Zubereitungsgeräte',s:'Zubereitungsgerät',f:[['type','Geräteart',
 beans:{t:'Bohnen',s:'Bohne',f:[['name','Name/Sorte','text'],['roaster','Röster','text'],['ara','Arabica-Anteil (%)','number'],['rob','Robusta-Anteil (%)','number'],['roast','Röstgrad','select',['Hell','Mittel','Dunkel']],['country','Ursprungsland','text'],['region','Region / Anbaugebiet','text'],['farm','Farm / Produzent (optional)','text'],['variety','Varietät','text'],['processing','Aufbereitung / Processing','text'],['roastDate','Röstdatum','date'],['openingDate','Öffnungsdatum','date'],['ratio','Ziel-Ratio (1 : x), z. B. 2','number'],['storageType','Lagerungsart','select',['Originalverpackung mit Ventil','Luftdichter Behälter','Vakuumbehälter','Aromadose','Gefrierlagerung','Sonstige Lagerung']],['storageNotes','Lagerungshinweise','text'],['note','Notiz','text']]},
 waters:{t:'Wasser',s:'Wasserprofil',f:[['name','Name des Wasserprofils','text'],['origin','Wasserquelle','text'],['treatment','Marke / Aufbereitung','text'],['gh','Gesamthärte (°dH)','number'],['kh','Karbonathärte (°dH)','number'],['ph','pH-Wert','number'],['tds','Leitfähigkeit / TDS (ppm)','number'],['note','Notiz','text']]}
 };
+function ensureCoffeeDefaults(){if(!Array.isArray(db.coffeeSystems))db.coffeeSystems=[];if(!db.coffeeSystems.length)db.coffeeSystems=[
+ {id:'sys-nespresso-original',name:'Nespresso Original'},
+ {id:'sys-nespresso-vertuo',name:'Nespresso Vertuo'},
+ {id:'sys-dolce-gusto',name:'Dolce Gusto'},
+ {id:'sys-tassimo',name:'Tassimo'},
+ {id:'sys-ese',name:'ESE (44 mm)'},
+ {id:'sys-senseo',name:'Senseo / Softpad'}
+];}
 let db={};try{db=JSON.parse(localStorage.getItem(K))||{}}catch(e){}
-[...EQ,'beans','waters','shots','preps','recipes','coffeeSystems','coffeeProducts','blends','blendVersions','components','drinkProfiles','customUnits'].forEach(k=>{if(!Array.isArray(db[k]))db[k]=[]});db.schemaVersion=Math.max(2,Number(db.schemaVersion)||1);db.last=db.last&&typeof db.last==='object'?db.last:{};
+[...EQ,'beans','waters','shots','preps','recipes','coffeeSystems','coffeeProducts','blends','blendVersions','components','drinkProfiles','customUnits'].forEach(k=>{if(!Array.isArray(db[k]))db[k]=[]});db.schemaVersion=Math.max(2,Number(db.schemaVersion)||1);ensureCoffeeDefaults();db.last=db.last&&typeof db.last==='object'?db.last:{};
 const save=()=>{db.mod=Date.now();try{localStorage.setItem(K,JSON.stringify(db))}catch(e){}};
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const nf=(n,d=1)=>Number(n).toLocaleString('de-DE',{maximumFractionDigits:d});
@@ -382,7 +390,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b
  else if(a=='exp'){document.getElementById('io').value=JSON.stringify(db);pend=null;document.getElementById('ic').innerHTML='Stand: '+fd(db.mod)+' · '+cnt(db)+'<br>Dateiname-Vorschlag: baristiq-'+new Date().toISOString().slice(0,10)+'.txt'}
  else if(a=='imp'){const io=document.getElementById('io'),ic=document.getElementById('ic');let d;try{d=JSON.parse(io.value)}catch(x){}
  if(!d||typeof d!='object'||!Array.isArray(d.shots)){ic.textContent='Ungültige Daten: bitte den Export-Text vollständig einfügen.';pend=null;return}
- if(pend&&pend.raw===io.value){db=pend.d&&typeof pend.d==='object'&&!Array.isArray(pend.d)?pend.d:{};[...EQ,'beans','waters','shots','preps','recipes'].forEach(k=>{if(!Array.isArray(db[k]))db[k]=[]});db.last=db.last&&typeof db.last==='object'?db.last:{};try{localStorage.setItem(K,JSON.stringify(db))}catch(x){}pend=null;render();return}
+ if(pend&&pend.raw===io.value){db=pend.d&&typeof pend.d==='object'&&!Array.isArray(pend.d)?pend.d:{};[...EQ,'beans','waters','shots','preps','recipes','coffeeSystems','coffeeProducts','blends','blendVersions','components','drinkProfiles','customUnits'].forEach(k=>{if(!Array.isArray(db[k]))db[k]=[]});db.schemaVersion=Math.max(2,Number(db.schemaVersion)||1);ensureCoffeeDefaults();db.last=db.last&&typeof db.last==='object'?db.last:{};try{localStorage.setItem(K,JSON.stringify(db))}catch(x){}pend=null;render();return}
  pend={raw:io.value,d};const lm=db.mod,im=d.mod,older=im&&lm&&im<lm,empty=!db.shots.length&&!db.beans.length&&!rec().length,ds=db.shots.length-d.shots.length;
  ic.innerHTML=`<b>Datei:</b> ${fd(im)} · ${cnt(d)}<br><b>Hier:</b> ${fd(lm)} · ${cnt(db)}<br>${older?'<b>Achtung: Die Datei ist älter als der Stand hier. Änderungen seit '+fd(im)+' gehen verloren.</b>':empty?'Hier sind noch keine Daten, es geht nichts verloren.':!im||!lm?'Zeitstempel fehlt, der Stand lässt sich nicht vergleichen.':'Die Datei ist neuer oder gleich alt.'}${ds>0?'<br><b>Hier gibt es '+ds+' Extraktionen mehr als in der Datei, sie gehen verloren.</b>':''}<br>Zum Ersetzen noch einmal auf Import drücken.`}});
 document.addEventListener('submit',e=>{e.preventDefault();const f=e.target,d=Object.fromEntries(new FormData(f));
