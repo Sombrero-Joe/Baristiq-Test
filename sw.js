@@ -1,4 +1,4 @@
-const CACHE_NAME = 'baristiq-test-v78';
+const CACHE_NAME = 'baristiq-test-v79';
 const APP_FILES = ['./', './index.html'];
 
 self.addEventListener('install', event => {
