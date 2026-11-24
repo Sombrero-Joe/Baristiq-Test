@@ -7,7 +7,7 @@ const LEGACY_CACHE_PREFIX =
   SCOPE_KEY === 'baristiq-laboratory' ? 'baristiq-lab-' :
   SCOPE_KEY === 'baristiq' ? 'baristiq-live-' :
   CACHE_PREFIX;
-const CACHE_NAME = `${CACHE_PREFIX}v147`;
+const CACHE_NAME = `${CACHE_PREFIX}v148`;
 const APP_FILES = ['./', './index.html'];
 
 self.addEventListener('install', event => {
